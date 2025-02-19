@@ -335,6 +335,8 @@ def runCmd(path: str) :
 
 	os.system(cmd)
 
+import time
+
 def gitCmd(path: str) :
 	print("Possible subommands: link, commit, pull")
 	cmd = input(">>> ").strip()
@@ -344,7 +346,16 @@ def gitCmd(path: str) :
 
 		ret = os.system(f"cd {path} && git remote add origin {link} && git branch -M main && git add . && git commit -m \"First Commit\" && git push --set-upstream origin main")
 
-		if ret == 0 : print("Linked github repo successfully!")
+		if ret == 0 :
+			print("Linked github repo successfully!")
+
+			meta = getMetadata(path)
+			meta["commits"].append({
+				"message": "First Commit",
+				"time": time.time()
+			})
+			setMetadata(path, "commits", meta["commits"])
+
 	elif cmd == "commit" :
 		msg = input("Commit message: ")
 
@@ -355,6 +366,13 @@ def gitCmd(path: str) :
 			cm = getMetadata(path)["commits"]
 			cm.append(msg)
 			setMetadata(path, "commits", cm)
+
+			meta = getMetadata(path)
+			meta["commits"].append({
+				"message": msg,
+				"time": time.time()
+			})
+			setMetadata(path, "commits", meta["commits"])
 	elif cmd == "pull" :
 		ret = os.system(f"cd {path} && git pull")
 		if ret == 0 : print("Commit pulled successfully!")
