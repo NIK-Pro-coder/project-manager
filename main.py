@@ -18,7 +18,8 @@ except FileNotFoundError :
 			"langs": [],
 			"rm-misplaced": None,
 			"packages": {},
-			"editor": ""
+			"editor": "",
+			"ideas": []
 		}, f)
 	with open(config_path) as f :
 		config = json.load(f)
@@ -36,6 +37,7 @@ def getConfig(key: str, default) :
 	return config[key] if key in config else default
 
 editor = getConfig("editor", "")
+ideas = getConfig("ideas", [])
 
 if editor == "" :
 	print("Looks like you haven't configured an editor")
@@ -254,31 +256,9 @@ def setMetadata(path: str, key: str, value) :
 		f.write(json.dumps(meta))
 
 def metaCmd(path: str) :
-	print("Possible subcommands: set, show, exit")
-	cmd, *args = input(">>> ").strip().split()
+	showMetadata(path)
 
-	if cmd == "show" :
-		showMetadata(path)
-	elif cmd == "set" :
-		key = input("Key to set: ")
-		val = input("Value to set: ")
-
-		try :
-			to_set = type(meta_structure[key])(val)
-		except :
-			print(f"{val} cannot be interpreted as {type(meta_structure[key])}")
-			return 0
-
-		with open(path + "/project.json") as f :
-			project_info = json.load(f)
-
-		project_info[key] = to_set
-
-		with open(path + "/project.json", "w") as f :
-			json.dump(project_info, f)
-	elif cmd == "exit": return 1
-
-	return 0
+	return 1
 
 def openCmd(path: str) -> int :
 
@@ -294,12 +274,10 @@ def packCmd(path: str) -> int :
 
 	commands = getConfig("packages", {})[lang]
 
-	print("Possible subcommands: exit, add, rm, search, list")
+	print("Possible subcommands: add, rm, search, list")
 	cmd = input(">>> ").strip().lower()
 
-	if cmd == "exit" :
-		return 1
-	elif cmd == "add" :
+	if cmd == "add" :
 		lib = input("Library to add: ").strip()
 		cmd = f"cd {path} && {commands["add"].replace("$x", lib)}"
 		print(f"Running {cmd}")
@@ -319,7 +297,7 @@ def packCmd(path: str) -> int :
 		print(f"Running {cmd}")
 		os.system(cmd)
 
-	return 0
+	return 1
 
 def runCmd(path: str) :
 	lang = path[len(str(Path.home()))+1:path.rfind("/")]
@@ -547,8 +525,44 @@ def createMode() :
 
 	return projectMode(str(path))
 
+def ideaMode() :
+
+	while True :
+
+		print("Possible subcommands: exit, make, show, rm")
+		cmd = input(">>> ")
+
+		if cmd == "exit" :
+			break
+		elif cmd == "show" :
+			print("Saved project ideas:")
+			for i in ideas :
+				print(" -", i["name"])
+				print(" ", " ", i["desc"])
+		elif cmd == "make" :
+			name = input("Idea name: ")
+			desc = input("Idea description: ")
+
+			ideas.append({
+				"name": name,
+				"desc": desc
+			})
+
+			setConfig("ideas", ideas)
+		elif cmd == "rm" :
+			id = input("Id to remove: ")
+			if not id.isdecimal() :
+				print(id, "is not a number")
+				continue
+
+			id = int(id)
+
+			ideas.pop(id)
+
+			setConfig("ideas", ideas)
+
 def interactiveMode() :
-	print("(exit to close) Select a mode, possible modes: folders, project, config, create")
+	print("(exit to close) Select a mode, possible modes: folders, project, config, create, ideas")
 	mode = input(">>> ")
 
 	if mode == "exit": exit()
@@ -562,6 +576,8 @@ def interactiveMode() :
 		func = configEditMode
 	elif mode == "create" :
 		func = createMode
+	elif mode == "ideas" :
+		func = ideaMode
 
 	if func :
 		func()
