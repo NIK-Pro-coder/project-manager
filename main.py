@@ -49,16 +49,15 @@ langs = getConfig("langs", [])
 
 if not langs :
 	toadd = []
+	print("You can change alnguage folders later but it requires a restart to get configured properly")
 	select = input("There are no language files in the config, would you like to autoselect them? (y/n) ").lower()[0] == "y"
 	homedirs = [str(Path.home() / x) for x in os.listdir(Path.home()) if os.path.isdir(Path.home() / x) and x[0] != "."]
 
 	if select :
 		toadd = [x for x in homedirs if len(x[len(str(Path.home())):]) < 5]
 	else :
-		for i in homedirs :
-			a = input(f" Add '{Path.home()}/{i}'? (y/n) ").lower()[0] == "y"
-			if a :
-				toadd.append(i)
+		ins = input("Directories to add: ").strip().split()
+		toadd = [x if x.startswith("/") else str(Path.home() / x) for x in ins]
 
 	while True :
 		print("Folders that will be added:")
@@ -474,7 +473,7 @@ def folderEditMode() :
 				print(" -", i, ("(" + ", ".join(info) + ")") if info else "")
 		elif cmd == "add" :
 			while True :
-				add = input("Diractories to add: ").strip().split()
+				add = input("Directories to add: ").strip().split()
 
 				add = [x if x[0] == "/" else str(Path.home() / x) for x in add]
 
@@ -489,7 +488,7 @@ def folderEditMode() :
 					break
 		elif cmd == "rm" :
 			while True :
-				add = input("Diractories to remove: ").strip().split()
+				add = input("Directories to remove: ").strip().split()
 
 				add = [x if x[0] == "/" else str(Path.home() / x) for x in add]
 
@@ -609,7 +608,7 @@ def ideaMode() :
 			setConfig("ideas", ideas)
 
 def interactiveMode() :
-	print("(exit to close) Select a mode, possible modes: folders, project, config, create, ideas")
+	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas")
 	mode = input(">>> ")
 
 	if mode == "exit": exit()
@@ -617,7 +616,7 @@ def interactiveMode() :
 	func = None
 	if mode == "project" :
 		func = projectLoadMode
-	elif mode == "folders" :
+	elif mode == "langs" :
 		func = folderEditMode
 	elif mode == "config" :
 		func = configEditMode
