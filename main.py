@@ -141,6 +141,8 @@ meta_structure = {
 	"name": "<not set>",
 	"desc": "<not set>",
 	"commits": [],
+	"todos": [],
+	"points": 0
 }
 
 print("Checking project files")
@@ -355,6 +357,50 @@ def gitCmd(path: str) :
 		ret = os.system(f"cd {path} && git pull")
 		if ret == 0 : print("Commit pulled successfully!")
 
+def todoCmd(path: str) :
+	print("Possible subcommands: exit, show, add, mark")
+	cmd = input(">>> ")
+	todo = getMetadata(path)["todos"]
+	points = getMetadata(path)["points"]
+
+	if cmd == "exit" :
+		return 1
+	elif cmd == "show" :
+		print("This projects todos:")
+		for i in todo :
+			print(" " + ("x" if i["completed"] else "-"), i["label"], f"({i["points"]} points)" if not i["completed"] else "(completed)")
+		print("Total points:", points)
+	elif cmd == "add" :
+		label = input("This todo's label: ")
+		p = input("Amount of points to reward: ")
+		if not p.isdecimal() :
+			print(p, "is not a number")
+			return 0
+
+		points = int(p)
+
+		todo.append({
+			"label": label,
+			"points": points,
+			"completed": False
+		})
+
+		setMetadata(path, "todos", todo)
+	elif cmd == "mark" :
+		label = input("This todo's label: ")
+
+		for i in todo :
+			if i["label"] == label and not i["completed"] :
+				i["completed"] = True
+				p = getMetadata(path)["points"] + i["points"]
+				setMetadata(path, "points", p)
+				setMetadata(path, "todos", todo)
+				return 0
+
+		print("No uncompleted todo named:", label)
+
+	return 0
+
 def projectMode(path: str) :
 	cmds = {
 		"meta": metaCmd,
@@ -362,10 +408,11 @@ def projectMode(path: str) :
 		"pack": packCmd,
 		"run": runCmd,
 		"git": gitCmd,
+		"todo": todoCmd
 	}
 
 	while True :
-		print("Availible commands: meta, open, exit, pack, run, git")
+		print("Availible commands: meta, open, exit, pack, run, git, todo")
 		cmd = input(">>> ").strip()
 
 		if cmd == "exit": return

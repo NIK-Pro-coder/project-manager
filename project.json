@@ -1,1 +1,1 @@
-{"name": "projects", "desc": "<not set>", "revision": 3, "last-modified": 1739908319.8361278, "main": "main.py", "commits": [{"message": "First Commit", "time": 1739994781.3825781}]}
+{"name": "projects", "desc": "<not set>", "revision": 3, "last-modified": 1739908319.8361278, "main": "main.py", "commits": [{"message": "First Commit", "time": 1739994781.3825781}, "Added ideas top level command", {"message": "Added ideas top level command", "time": 1739995936.5708005}], "todos": [{"label": "Do things", "points": 5, "completed": true}], "points": 5}
