@@ -4,6 +4,21 @@ from pathlib import Path
 
 config_path = str(Path.home() / ".config/project-manager/config.json")
 
+def autocomplete(query: str, possiblilities: list) -> str :
+	got = input(query)
+	fil = [x for x in possiblilities if x.startswith(got)]
+	fil = list(set(fil))
+
+	if len(fil) == 0 :
+		print("Nothing matched, possible values:", ", ".join(possiblilities))
+		return autocomplete(query, possiblilities)
+	elif len(fil) > 1 :
+		print("Possibilities:", ", ".join(fil))
+		return autocomplete(query, fil)
+	else :
+		print(f"Autocompleted to: {fil[0]}")
+		return fil[0]
+
 try :
 	with open(config_path) as f :
 		config = json.load(f)
@@ -19,7 +34,8 @@ except FileNotFoundError :
 			"rm-misplaced": None,
 			"packages": {},
 			"editor": "",
-			"ideas": []
+			"ideas": [],
+			"create-backup": None
 		}, f)
 	with open(config_path) as f :
 		config = json.load(f)
@@ -144,6 +160,13 @@ meta_structure = {
 	"points": 0
 }
 
+create_backup = getConfig("create-backups", None)
+if create_backup == None :
+	print("This program creates a file called project.json for every project file you have")
+	create_backup = input("Would you like to skip this step for filders that have 'backup' in their name? (y/n) ").lower()[0] == "y"
+
+	setConfig("create-backups", create_backup)
+
 print("Checking project files")
 for i in langs :
 	for f in os.listdir(i) :
@@ -152,7 +175,8 @@ for i in langs :
 			misplaced.append(path)
 		else :
 			if not os.path.isfile(path + "/project.json") :
-				no_project_file.append(path)
+				if not "backup" in f or not create_backup :
+					no_project_file.append(path)
 			else :
 				with open(path + "/project.json") as f :
 					proj = json.load(f)
@@ -276,7 +300,7 @@ def packCmd(path: str) -> int :
 	commands = getConfig("packages", {})[lang]
 
 	print("Possible subcommands: add, rm, search, list")
-	cmd = input(">>> ").strip().lower()
+	cmd = autocomplete(">>> ", ["add", "rm", "list"]).strip().lower()
 
 	if cmd == "add" :
 		lib = input("Library to add: ").strip()
@@ -307,7 +331,7 @@ def runCmd(path: str) :
 	main = getMetadata(path)["main"]
 
 	if main == "" :
-		print("Main entry point not definde, use meta > set > main")
+		print("Main entry point not definde, edit the project.json file")
 		return
 
 	cmd = f"cd {path} && {script.replace("$x", main)}"
@@ -318,7 +342,7 @@ import time
 
 def gitCmd(path: str) :
 	print("Possible subommands: link, commit, pull")
-	cmd = input(">>> ").strip()
+	cmd = autocomplete(">>> ", ["link", "commit", "pull"]).strip()
 
 	if cmd == "link" :
 		link = input("Repository https/ssh: ")
@@ -358,7 +382,7 @@ def gitCmd(path: str) :
 
 def todoCmd(path: str) :
 	print("Possible subcommands: exit, show, add, mark")
-	cmd = input(">>> ")
+	cmd = autocomplete(">>> ", ["exit", "show", "add", "mark"])
 	todo = getMetadata(path)["todos"]
 	points = getMetadata(path)["points"]
 
@@ -386,7 +410,8 @@ def todoCmd(path: str) :
 
 		setMetadata(path, "todos", todo)
 	elif cmd == "mark" :
-		label = input("This todo's label: ")
+		p_label = [x["label"] for x in todo if not x["completed"]]
+		label = autocomplete("This todo's label: ", p_label)
 
 		for i in todo :
 			if i["label"] == label and not i["completed"] :
@@ -412,7 +437,7 @@ def projectMode(path: str) :
 
 	while True :
 		print("Availible commands: meta, open, exit, pack, run, git, todo")
-		cmd = input(">>> ").strip()
+		cmd = autocomplete(">>> ", ["meta", "open", "exit", "pack", "run", "git", "todo"]).strip()
 
 		if cmd == "exit": return
 
@@ -422,7 +447,12 @@ def projectMode(path: str) :
 
 def projectLoadMode() :
 	print("(exit to abort) Select a project: [lang]/[name]")
-	ins = input(">>> ")
+
+	p_langs = langs
+	p_langs.extend([x[x.rfind("/")+1:] for x in langs])
+	p_langs.append("exit")
+
+	ins = autocomplete(">>> ", p_langs)
 	if ins == "exit" : return 1
 
 	lang, name = map(str.strip, ins.split("/")) if "/" in ins else (ins, "")
@@ -433,7 +463,9 @@ def projectLoadMode() :
 		print("Availible projects:")
 		for i in projects :
 			print(" -", i)
-		name = input("Project name: ").strip()
+		p_projects = projects
+		p_projects.extend([x[x.rfind("/")+1:] for x in projects])
+		name = autocomplete("Project name: ", p_projects).strip()
 
 	path = Path.home() / lang / name
 
@@ -455,7 +487,7 @@ def projectLoadMode() :
 def folderEditMode() :
 	while True :
 		print("Possible subcommands: exit, add, rm, list")
-		cmd = input(">>> ")
+		cmd = autocomplete(">>> ", ["exit", "add", "rm", "list"])
 
 		if cmd == "exit" :
 			return
@@ -576,7 +608,7 @@ def ideaMode() :
 	while True :
 
 		print("Possible subcommands: exit, make, show, rm")
-		cmd = input(">>> ")
+		cmd = autocomplete(">>> ", ["exit", "make", "show", "rm"])
 
 		if cmd == "exit" :
 			break
@@ -609,7 +641,7 @@ def ideaMode() :
 
 def interactiveMode() :
 	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas")
-	mode = input(">>> ")
+	mode = autocomplete(">>> ", ["exit", "langs", "project", "config", "create", "ideas"])
 
 	if mode == "exit": exit()
 
