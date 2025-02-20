@@ -174,6 +174,40 @@ if create_backup == None :
 
 	setConfig("create-backups", create_backup)
 
+projects_in_folder: bool | None = getConfig("projects-in-folder", None)
+if projects_in_folder == None :
+	projects_in_folder = input("Would you like to move project files all to a signle folder? (y/n) ").lower()[0] == "y"
+
+	setConfig("projects-in-folder", projects_in_folder)
+
+if projects_in_folder and not os.path.isdir(Path.home() / ".config/project-manager/projects") :
+	os.mkdir(Path.home() / ".config/project-manager/projects")
+
+if projects_in_folder :
+	for i in langs :
+		print(i)
+		if not os.path.isdir(Path.home() / (".config/project-manager/projects/" + i)) :
+			os.mkdir(Path.home() / (".config/project-manager/projects/" + i))
+
+if projects_in_folder :
+	for i in langs :
+		for f in os.listdir(i) :
+			path: str = i + "/" + f
+			if os.path.isfile(path + "/project.json") :
+				with open(Path.home() / (".config/project-manager/projects" + path + ".json"), "w") as f :
+					with open(path + "/project.json") as r :
+						f.write(r.read())
+				os.remove(path + "/project.json")
+else :
+	for i in langs :
+			for f in os.listdir(i) :
+				path: str = i + "/" + f
+				if os.path.isfile(path + "/" + f + ".json") :
+					with open(path + "/project.json", "w") as file :
+						with open(path + "/" + f + ".json") as r :
+							file.write(r.read())
+					os.remove(path + "/" + f + ".json")
+
 print("Checking project files")
 for i in langs :
 	for f in os.listdir(i) :
@@ -181,21 +215,38 @@ for i in langs :
 		if os.path.isfile(path) :
 			misplaced.append(path)
 		else :
-			if not os.path.isfile(path + "/project.json") :
-				if not "backup" in f or not create_backup :
-					no_project_file.append(path)
+			if projects_in_folder :
+				if not os.path.isfile(Path.home() / (".config/project-manager/projects" + path + ".json")) :
+					if not "backup" in f or not create_backup :
+						no_project_file.append(path)
+				else :
+					with open(Path.home() / (".config/project-manager/projects" + path + ".json")) as f :
+						proj = json.load(f)
+
+					proj["commits"] = [x for x in proj["commits"] if type(x) is dict]
+
+					for m in meta_structure :
+						if not m in proj :
+							proj[m] = meta_structure[m]
+
+					with open(Path.home() / (".config/project-manager/projects" + path + ".json"), "w") as f :
+						json.dump(proj, f)
 			else :
-				with open(path + "/project.json") as f :
-					proj = json.load(f)
+				if not os.path.isfile(path + "/project.json") :
+					if not "backup" in f or not create_backup :
+						no_project_file.append(path)
+				else :
+					with open(path + "/project.json") as f :
+						proj = json.load(f)
 
-				proj["commits"] = [x for x in proj["commits"] if type(x) is dict]
+					proj["commits"] = [x for x in proj["commits"] if type(x) is dict]
 
-				for m in meta_structure :
-					if not m in proj :
-						proj[m] = meta_structure[m]
+					for m in meta_structure :
+						if not m in proj :
+							proj[m] = meta_structure[m]
 
-				with open(path + "/project.json", "w") as f :
-					json.dump(proj, f)
+					with open(path + "/project.json", "w") as f :
+						json.dump(proj, f)
 
 if rm_misplaced == None :
 	print("These files seem to be misplaced:")
@@ -255,7 +306,6 @@ if no_project_file :
 
 	if create :
 		for i in no_project_file :
-			print(i + "/project.json")
 			meta = {
 				"name": i[i.rfind("/")+1:],
 				"desc": "<not set>",
@@ -264,8 +314,12 @@ if no_project_file :
 				"main": ""
 			}
 			print(printJsonPritty(meta))
-			with open(i + "/project.json", "w") as f :
-				json.dump(meta, f)
+			if projects_in_folder :
+				with open(Path.home() / ".config/project-manager/projects" / (i + ".json"), "w") as f :
+					json.dump(meta, f)
+			else :
+				with open(i + "/project.json", "w") as f :
+					json.dump(meta, f)
 
 def formatText(string: str) :
 	new = string.replace("-", " ")
@@ -273,23 +327,34 @@ def formatText(string: str) :
 	return new
 
 def getMetadata(path: str) :
-	with open(path + "/project.json") as f :
-		return json.load(f)
+	if projects_in_folder :
+		with open(Path.home() / (".config/project-manager/projects" + path + ".json")) as f :
+			return json.load(f)
+	else :
+		with open(path + "/project.json") as f :
+			return json.load(f)
 
 def showMetadata(path: str) :
 	project_info = getMetadata(path)
 
 	print("Project metadata:")
 	print(printJsonPritty(project_info))
-	print(f"Metadata stored in: {path}/project.json")
+	if projects_in_folder :
+		print(f"Metadata stored in: {Path.home()}.config/project-manager/projects{path}.json")
+	else :
+		print(f"Metadata stored in: {path}/project.json")
 
 def setMetadata(path: str, key: str, value: Any) :
 	meta = getMetadata(path)
 
 	meta[key] = value
 
-	with open(path + "/project.json", "w") as f :
-		f.write(json.dumps(meta))
+	if projects_in_folder :
+		with open(Path.home() / (".config/project-manager/projects" + path + ".json"), "w") as f :
+			f.write(json.dumps(meta))
+	else :
+		with open(i + "/project.json", "w") as f :
+			f.write(json.dumps(meta))
 
 def metaCmd(path: str) :
 	showMetadata(path)
@@ -311,20 +376,23 @@ def packCmd(path: str) -> int :
 	commands = getConfig("packages", {})[lang]
 
 	print("Possible subcommands: add, rm, search, list")
-	cmd = autocomplete(">>> ", ["add", "rm", "list"]).strip().lower()
+	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/pack >>> ", ["add", "rm", "list"]).strip().lower()
 
 	if cmd == "add" :
-		lib = input("Library to add: ").strip()
+		lib = input(f"/project{path[len(str(Path.home())):]}/pack/add | Library to add: ").strip()
+		if lib == "" : return 0
 		cmd = f"cd {path} && {commands["add"].replace("$x", lib).replace("$t", path)}"
 		print(f"Running {cmd}")
 		os.system(cmd)
 	elif cmd == "rm" :
-		lib = input("Library to remove: ").strip()
+		lib = input(f"/project{path[len(str(Path.home())):]}/pack/rm | Library to remove: ").strip()
+		if lib == "" : return 0
 		cmd = f"cd {path} && {commands["rm"].replace("$x", lib).replace("$t", path)}"
 		print(f"Running {cmd}")
 		os.system(cmd)
 	elif cmd == "search" :
-		lib = input("Keywords to search: ").strip()
+		lib = input(f"/project{path[len(str(Path.home())):]}/pack/search | Keywords to search: ").strip()
+		if lib == "" : return 0
 		cmd = f"cd {path} && {commands["search"].replace("$x", lib).replace("$t", path)}"
 		print(f"Running {cmd}")
 		os.system(cmd)
@@ -353,12 +421,12 @@ import time
 
 def gitCmd(path: str) :
 	print("Possible subommands: link, commit, pull, exit")
-	cmd = autocomplete(">>> ", ["link", "commit", "pull", "exit"]).strip()
+	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/git >>> ", ["link", "commit", "pull", "exit"]).strip()
 
 	if cmd == "exit" :
 		return
 	if cmd == "link" :
-		link = input("Repository https/ssh: ")
+		link = input(f"/project{path[len(str(Path.home())):]}/git/link | Repository https/ssh: ")
 
 		ret = os.system(f"cd {path} && git remote add origin {link} && git branch -M main && git add . && git commit -m \"First Commit\" && git push --set-upstream origin main")
 
@@ -373,7 +441,7 @@ def gitCmd(path: str) :
 			setMetadata(path, "commits", meta["commits"])
 
 	elif cmd == "commit" :
-		msg = input("Commit message: ")
+		msg = input(f"/project{path[len(str(Path.home())):]}/git/commit | Commit message: ")
 
 		ret = os.system(f"cd {path} && git add . && git commit -m \"{msg}\" && git push")
 
@@ -406,7 +474,7 @@ def showTodo(path: str) :
 
 def todoCmd(path: str) :
 	print("Possible subcommands: exit, show, add, mark")
-	cmd = autocomplete(">>> ", ["exit", "show", "add", "mark"])
+	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/todo >>> ", ["exit", "show", "add", "mark"])
 	todo = getMetadata(path)["todos"]
 	points = getMetadata(path)["points"]
 
@@ -415,7 +483,7 @@ def todoCmd(path: str) :
 	elif cmd == "show" :
 		showTodo(path)
 	elif cmd == "add" :
-		label = input("This todo's label: ")
+		label = input(f"/project{path[len(str(Path.home())):]}/todo/add | This todo's label: ")
 		p = input("Amount of points to reward: ")
 		if not p.isdecimal() :
 			print(p, "is not a number")
@@ -432,7 +500,7 @@ def todoCmd(path: str) :
 		setMetadata(path, "todos", todo)
 	elif cmd == "mark" :
 		p_label = [x["label"] for x in todo if not x["completed"]]
-		label = autocomplete("This todo's label: ", p_label)
+		label = autocomplete(f"/project{path[len(str(Path.home())):]}/todo/mark | This todo's label: ", p_label)
 
 		for i in todo :
 			if i["label"] == label and not i["completed"] :
@@ -458,7 +526,7 @@ def projectMode(path: str) :
 
 	while True :
 		print("Availible commands: meta, open, exit, pack, run, git, todo")
-		cmd = autocomplete(">>> ", ["meta", "open", "exit", "pack", "run", "git", "todo"]).strip()
+		cmd = autocomplete(f"/project{path[len(str(Path.home())):]} >>> ", ["meta", "open", "exit", "pack", "run", "git", "todo"]).strip()
 
 		if cmd == "exit": return
 
@@ -469,24 +537,23 @@ def projectMode(path: str) :
 def projectLoadMode() :
 	print("(exit to abort) Select a project: [lang]/[name]")
 
-	p_langs = langs
-	p_langs.extend([x[x.rfind("/")+1:] for x in langs])
+	p_langs = [x[x.rfind("/")+1:] for x in langs]
 	p_langs.append("exit")
 
-	ins = autocomplete(">>> ", p_langs)
+	ins = autocomplete("/project >>> ", p_langs)
 	if ins == "exit" : return 1
 
 	lang, name = map(str.strip, ins.split("/")) if "/" in ins else (ins, "")
 
 	if name == "" :
-		projects = [x for x in os.listdir(Path.home() / lang) if os.path.isfile(Path.home() / lang / x / "project.json")]
+		projects = [x for x in os.listdir(Path.home() / lang) if os.path.isdir(Path.home() / lang / x)]
 		projects.sort()
 		print("Availible projects:")
 		for i in projects :
 			print(" -", i)
 		p_projects = projects
 		p_projects.extend([x[x.rfind("/")+1:] for x in projects])
-		name = autocomplete("Project name: ", p_projects).strip()
+		name = autocomplete(f"/project/{lang} | Project name: ", p_projects).strip()
 
 	path = Path.home() / lang / name
 
@@ -508,7 +575,7 @@ def projectLoadMode() :
 def folderEditMode() :
 	while True :
 		print("Possible subcommands: exit, add, rm, list")
-		cmd = autocomplete(">>> ", ["exit", "add", "rm", "list"])
+		cmd = autocomplete("/langs >>> ", ["exit", "add", "rm", "list"])
 
 		if cmd == "exit" :
 			return
@@ -526,7 +593,7 @@ def folderEditMode() :
 				print(" -", i, ("(" + ", ".join(info) + ")") if info else "")
 		elif cmd == "add" :
 			while True :
-				add = input("Directories to add: ").strip().split()
+				add = input("/langs/add | Directories to add: ").strip().split()
 
 				add = [x if x[0] == "/" else str(Path.home() / x) for x in add]
 
@@ -534,14 +601,14 @@ def folderEditMode() :
 				for i in add :
 					print(" -", i)
 
-				correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+				correct = input("/langs/add | Is this correct? (y/n) ").lower()[0] == "y"
 				if correct :
 					langs.extend(add)
 					setConfig("langs", langs)
 					break
 		elif cmd == "rm" :
 			while True :
-				add = input("Directories to remove: ").strip().split()
+				add = input("/langs/rm | Directories to remove: ").strip().split()
 
 				add = [x if x[0] == "/" else str(Path.home() / x) for x in add]
 
@@ -549,7 +616,7 @@ def folderEditMode() :
 				for i in add :
 					print(" -", i)
 
-				correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+				correct = input("/langs/rm | Is this correct? (y/n) ").lower()[0] == "y"
 				if correct :
 					for i in add :
 						if i in langs :
@@ -574,25 +641,25 @@ def createModeNoTempl() :
 		p_langs = langs
 		p_langs.extend([x[x.rfind("/")+1:] for x in langs])
 
-		lang = autocomplete("Project language: ", p_langs).strip()
+		lang = autocomplete("/create | Project language: ", p_langs).strip()
 		lang = lang if lang.startswith("/") else str(Path.home() / lang)
 
 		if not lang in langs :
 			print(f"'{lang}' is not a registered language folder, please register it as such before continuing")
 			return
 
-		name = input("Project name: ").strip()
+		name = input("/create | Project name: ").strip()
 		name_esc = escapeText(name)
 		print(f"Escaped name: {name_esc}")
 
-		desc = input("Project decsription: ").strip()
+		desc = input("/create | Project decsription: ").strip()
 		desc = desc if desc != "" else "<not set>"
 
 		path = lang + "/" + name_esc
 
 		ex = extensions[lang[lang.rfind("/")+1:]]
 
-		main = input(f"Main project entry point (default: {name_esc}.{ex}): ")
+		main = input(f"/create | Main project entry point (default: {name_esc}.{ex}): ")
 		main = main if main != "" else name_esc + "." + ex
 
 		meta = meta_structure.copy()
@@ -603,7 +670,7 @@ def createModeNoTempl() :
 		mt = printJsonPritty(meta)
 		print("Meta file created:")
 		print(mt)
-		correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+		correct = input("/create | Is this correct? (y/n) ").lower()[0] == "y"
 		if correct :
 			break
 
@@ -614,8 +681,12 @@ def createModeNoTempl() :
 	with open(path + "/" + main, "w") as f :
 		pass
 
-	with open(path + "/project.json", "w") as f :
-		json.dump(meta, f)
+	if projects_in_folder :
+		with open(Path.home() / (".config/project-manager/projects" + path + ".json"), "w") as f :
+			json.dump(meta, f)
+	else :
+		with open(path + "/project.json", "w") as f :
+			json.dump(meta, f)
 
 def copyDir(path: str, to: str) :
 	inside = [x for x in os.listdir(path)]
@@ -634,15 +705,15 @@ def copyDir(path: str, to: str) :
 
 def createModeTempl() :
 	while True :
-		tm = autocomplete("Name of template to use: ", list(templates.keys()))
+		tm = autocomplete("/create | Name of template to use: ", list(templates.keys()))
 
 		templ = templates[tm]
 
-		name = input("Project name: ").strip()
+		name = input("/create | Project name: ").strip()
 		name_esc = escapeText(name)
 		print(f"Escaped name: {name_esc}")
 
-		desc = input("Project description: ").strip()
+		desc = input("/create | Project description: ").strip()
 		desc = desc if desc else "<not set>"
 
 		path = templ["lang"] + "/" + name_esc
@@ -655,7 +726,7 @@ def createModeTempl() :
 		mt = printJsonPritty(meta)
 		print("Meta file created:")
 		print(mt)
-		correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+		correct = input("/create | Is this correct? (y/n) ").lower()[0] == "y"
 		if correct :
 			break
 
@@ -667,8 +738,12 @@ def createModeTempl() :
 
 	os.system(f"cd {path} && git init")
 
-	with open(path + "/project.json", "w") as f :
-		json.dump(meta, f)
+	if projects_in_folder :
+		with open(Path.home() / (".config/project-manager/projects" + path + ".json"), "w") as f :
+			json.dump(meta, f)
+	else :
+		with open(path + "/project.json", "w") as f :
+			json.dump(meta, f)
 
 	print("Running pre-package command:", templ["cmd"].replace("$t", path))
 	os.system(f"cd {path} && " + templ["cmd"].replace("$t", path))
@@ -687,7 +762,7 @@ def createModeTempl() :
 
 def createMode() :
 	if len(templates) > 0 :
-		temp = input("Would you like to use a template? (y/n) ").strip().lower()[0] == "y"
+		temp = input("/create | Would you like to use a template? (y/n) ").strip().lower()[0] == "y"
 	else :
 		temp = False
 
@@ -703,7 +778,7 @@ def ideaMode() :
 	while True :
 
 		print("Possible subcommands: exit, make, show, rm")
-		cmd = autocomplete(">>> ", ["exit", "make", "show", "rm"])
+		cmd = autocomplete("/ideas >>> ", ["exit", "make", "show", "rm"])
 
 		if cmd == "exit" :
 			break
@@ -713,8 +788,8 @@ def ideaMode() :
 				print(" -", i["name"])
 				print(" ", " ", i["desc"])
 		elif cmd == "make" :
-			name = input("Idea name: ")
-			desc = input("Idea description: ")
+			name = input("/ideas/add | Idea name: ")
+			desc = input("/ideas/add | Idea description: ")
 
 			ideas.append({
 				"name": name,
@@ -723,21 +798,19 @@ def ideaMode() :
 
 			setConfig("ideas", ideas)
 		elif cmd == "rm" :
-			id = input("Id to remove: ")
-			if not id.isdecimal() :
-				print(id, "is not a number")
-				continue
+			possible = [x["name"] for x in ideas]
+			id = autocomplete("/ideas/rn | Name if idea to remove: ", possible)
 
-			id = int(id)
-
-			ideas.pop(id)
+			for n,i in enumerate(ideas) :
+				if i["name"] == id :
+					ideas.pop(n)
 
 			setConfig("ideas", ideas)
 
 def templateMode() :
 	while True :
 		print("Possible subcommands: exit, show, add, rm")
-		cmd = autocomplete(">>> ", ["exit", "show", "add", "rm"])
+		cmd = autocomplete("/tmpl >>> ", ["exit", "show", "add", "rm"])
 
 		if cmd == "exit" :
 			return
@@ -748,22 +821,22 @@ def templateMode() :
 		elif cmd == "add" :
 			while True :
 				name = escapeText(input("Template Name: "))
-				print(f"Name set as '{name}'")
+				print(f"/tmpl/add | Name set as '{name}'")
 
 				p_langs = langs
 				p_langs.extend([x[x.rfind("/")+1:] for x in langs])
 
-				base_lang = autocomplete("Template base language: ", p_langs)
+				base_lang = autocomplete("/tmpl/add | Template base language: ", p_langs)
 				base_lang = base_lang if base_lang.startswith("/") else str(Path.home() / base_lang)
 
-				dir = input("Template directory: ").strip()
+				dir = input("/tmpl/add | Template directory: ").strip()
 				dir = dir if dir.startswith("/") else str(Path.home() / dir)
 
-				entry = input(f"Main entry point (default: main.{extensions[base_lang[base_lang.rfind("/")+1:]]}): ")
+				entry = input(f"/tmpl/add | Main entry point (default: main.{extensions[base_lang[base_lang.rfind("/")+1:]]}): ")
 				entry = entry if entry else f"main.{extensions[base_lang[base_lang.rfind("/")+1:]]}"
 
-				cmd = input("Pre-package command: ").strip()
-				packages = input("Packages to get automatically: ").strip().split()
+				cmd = input("/tmpl/add | OnCreate command: ").strip()
+				packages = input("/tmpl/add | Packages to install automatically: ").strip().split()
 
 				temp = {
 					"lang": base_lang,
@@ -776,19 +849,19 @@ def templateMode() :
 				mt = printJsonPritty(temp)
 				print("Template file created: ")
 				print(green(f"'{name}'") + ":", mt)
-				correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+				correct = input("/tmpl/add | Is this correct? (y/n) ").lower()[0] == "y"
 				if correct :
 					templates[name] = temp
 					setConfig("templates", templates)
 					break
 		elif cmd == "rm" :
-			name = autocomplete("Template to remove: ", list(templates.keys()))
+			name = autocomplete("/tmpl/rm | Template to remove: ", list(templates.keys()))
 			templates.pop(name)
 			setConfig("templates", templates)
 
 def interactiveMode() :
 	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas, templ")
-	mode = autocomplete(">>> ", ["exit", "langs", "project", "config", "create", "ideas", "templ"])
+	mode = autocomplete("/ >>> ", ["exit", "langs", "project", "config", "create", "ideas", "templ"])
 
 	if mode == "exit": exit()
 
