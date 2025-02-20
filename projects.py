@@ -2,12 +2,13 @@
 
 import os, json
 from pathlib import Path
+from typing import Any
 
 config_path = str(Path.home() / ".config/project-manager/config.json")
 
-def autocomplete(query: str, possiblilities: list) -> str :
-	got = input(query).strip()
-	fil = [x for x in possiblilities if x.startswith(got)]
+def autocomplete(query: str, possiblilities: list[str]) -> str :
+	got: str = input(query).strip()
+	fil: list[str] = [x for x in possiblilities if x.startswith(got)]
 	fil = list(set(fil))
 
 	if len(fil) == 0 or got == "" :
@@ -36,7 +37,8 @@ except FileNotFoundError :
 			"packages": {},
 			"editor": "",
 			"ideas": [],
-			"create-backup": None
+			"create-backup": None,
+			"templates": {}
 		}, f)
 	with open(config_path) as f :
 		config = json.load(f)
@@ -46,13 +48,14 @@ def saveConfig() :
 	with open(config_path, "w") as f :
 		json.dump(config, f)
 
-def setConfig(key: str, val) :
+def setConfig(key: str, val: Any) :
 	config[key] = val
 	saveConfig()
 
-def getConfig(key: str, default) :
+def getConfig(key: str, default: Any) :
 	return config[key] if key in config else default
 
+templates: dict = getConfig("templates", {})
 editor = getConfig("editor", "")
 ideas = getConfig("ideas", [])
 
@@ -98,6 +101,9 @@ if not langs :
 					toadd.pop(toadd.index(i))
 
 			toadd.extend(ad)
+
+langs = [x for x in langs if x.startswith("/")]
+setConfig("langs", langs)
 
 print("Loaded langs:")
 for i in langs :
@@ -146,11 +152,11 @@ for i in langs :
 
 	setConfig("packages", packs)
 
-rm_misplaced = getConfig("rm-misplaced", None)
-misplaced = []
-no_project_file = []
+rm_misplaced: bool | None = getConfig("rm-misplaced", None)
+misplaced: list[str] = []
+no_project_file: list[str] = []
 
-meta_structure = {
+meta_structure: dict[str, str | float | int | list[dict[str, int | str | bool]]] = {
 	"main": "",
 	"last-modified": -1.0,
 	"revision": 0,
@@ -161,7 +167,7 @@ meta_structure = {
 	"points": 0
 }
 
-create_backup = getConfig("create-backups", None)
+create_backup: bool | None = getConfig("create-backups", None)
 if create_backup == None :
 	print("This program creates a file called project.json for every project file you have")
 	create_backup = input("Would you like to skip this step for filders that have 'backup' in their name? (y/n) ").lower()[0] == "y"
@@ -171,7 +177,7 @@ if create_backup == None :
 print("Checking project files")
 for i in langs :
 	for f in os.listdir(i) :
-		path = i + "/" + f
+		path: str = i + "/" + f
 		if os.path.isfile(path) :
 			misplaced.append(path)
 		else :
@@ -204,9 +210,13 @@ if rm :
 	for i in misplaced :
 		os.remove(i)
 
+def green(text: str) -> str : return f"\033[92m{text}\033[00m"
+def aquamarine(text: str) -> str : return f"\033[96m'{text}'\033[00m"
+def blue(text: str) -> str : return f"\033[94m'{text}'\033[00m"
+
 indent = "  "
-def printJsonPritty(obj, depth = 0) :
-	string = ""
+def printJsonPritty(obj: Any, depth: int = 0) -> str :
+	string: str = ""
 
 	if type(obj) is dict :
 		string += indent * depth + "{\n"
@@ -221,19 +231,19 @@ def printJsonPritty(obj, depth = 0) :
 		string += indent * depth + "]"
 
 	if type(obj) is str :
-		return indent * depth + f"\033[92m'{obj}'\033[00m"
+		string = indent * depth + green(f"'{obj}'")
 
-	if type(obj) is None :
-		return indent * depth + "null"
+	if obj == None :
+		string = indent * depth + "null"
 
 	if type(obj) is int :
-		return indent * depth + f"\033[96m{obj}\033[00m"
+		string = indent * depth + aquamarine(str(obj))
 
 	if type(obj) is float :
-		return indent * depth + f"\033[96m{obj}\033[00m"
+		string = indent * depth + aquamarine(str(obj))
 
 	if type(obj) is bool :
-		return indent * depth + f"\033[94m{"true" if obj else "false"}\033[00m"
+		string = indent * depth + blue("true" if obj else "false")
 
 	return string
 
@@ -273,7 +283,7 @@ def showMetadata(path: str) :
 	print(printJsonPritty(project_info))
 	print(f"Metadata stored in: {path}/project.json")
 
-def setMetadata(path: str, key: str, value) :
+def setMetadata(path: str, key: str, value: Any) :
 	meta = getMetadata(path)
 
 	meta[key] = value
@@ -305,17 +315,17 @@ def packCmd(path: str) -> int :
 
 	if cmd == "add" :
 		lib = input("Library to add: ").strip()
-		cmd = f"cd {path} && {commands["add"].replace("$x", lib)}"
+		cmd = f"cd {path} && {commands["add"].replace("$x", lib).replace("$t", path)}"
 		print(f"Running {cmd}")
 		os.system(cmd)
 	elif cmd == "rm" :
 		lib = input("Library to remove: ").strip()
-		cmd = f"cd {path} && {commands["rm"].replace("$x", lib)}"
+		cmd = f"cd {path} && {commands["rm"].replace("$x", lib).replace("$t", path)}"
 		print(f"Running {cmd}")
 		os.system(cmd)
 	elif cmd == "search" :
 		lib = input("Keywords to search: ").strip()
-		cmd = f"cd {path} && {commands["search"].replace("$x", lib)}"
+		cmd = f"cd {path} && {commands["search"].replace("$x", lib).replace("$t", path)}"
 		print(f"Running {cmd}")
 		os.system(cmd)
 	elif cmd == "list" :
@@ -555,12 +565,16 @@ def configEditMode() :
 def escapeText(string: str) :
 	return string.lower().replace(" ", "_")
 
-def createMode() :
+def createModeNoTempl() :
 	while True :
 		print("Possible language folders:")
 		for i in langs :
 			print(" -", i)
-		lang = input("Project language: ").strip()
+
+		p_langs = langs
+		p_langs.extend([x[x.rfind("/")+1:] for x in langs])
+
+		lang = autocomplete("Project language: ", p_langs).strip()
 		lang = lang if lang.startswith("/") else str(Path.home() / lang)
 
 		if not lang in langs :
@@ -581,13 +595,11 @@ def createMode() :
 		main = input(f"Main project entry point (default: {name_esc}.{ex}): ")
 		main = main if main != "" else name_esc + "." + ex
 
-		meta = {
-			"name": name,
-			"desc": desc,
-			"revision": 0,
-			"last-modified": -1,
-			"main": main
-		}
+		meta = meta_structure.copy()
+		meta["name"] = name
+		meta["desc"] = desc
+		meta["main"] = main
+
 		mt = printJsonPritty(meta)
 		print("Meta file created:")
 		print(mt)
@@ -605,12 +617,84 @@ def createMode() :
 	with open(path + "/project.json", "w") as f :
 		json.dump(meta, f)
 
-	last_update = os.stat(path).st_mtime
-	meta = getMetadata(str(path))
+def copyDir(path: str, to: str) :
+	inside = [x for x in os.listdir(path)]
 
-	if last_update > meta["last-modified"] :
-		setMetadata(str(path), "last-modified", last_update)
-		setMetadata(str(path), "revision", meta["revision"] + 1)
+	files = [x for x in inside if os.path.isfile(path + "/" + x) and not os.path.islink(path + "/" + x)]
+	dirs = [x for x in inside if os.path.isdir(path + "/" + x) and not os.path.islink(path + "/" + x)]
+
+	for i in files :
+		with open(to + "/" + i, "w") as f :
+			with open(path + "/" + i) as r :
+				f.write(r.read())
+
+	for i in dirs :
+		os.mkdir(to + "/" + i)
+		copyDir(path + "/" + i, to + "/" + i)
+
+def createModeTempl() :
+	while True :
+		tm = autocomplete("Name of template to use: ", list(templates.keys()))
+
+		templ = templates[tm]
+
+		name = input("Project name: ").strip()
+		name_esc = escapeText(name)
+		print(f"Escaped name: {name_esc}")
+
+		desc = input("Project description: ").strip()
+		desc = desc if desc else "<not set>"
+
+		path = templ["lang"] + "/" + name_esc
+
+		meta = meta_structure.copy()
+		meta["name"] = name
+		meta["desc"] = desc
+		meta["main"] = templ["main"]
+
+		mt = printJsonPritty(meta)
+		print("Meta file created:")
+		print(mt)
+		correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+		if correct :
+			break
+
+	os.mkdir(path)
+
+	print(f"Copying {templ["dir"]} -> {path}")
+
+	copyDir(templ["dir"], path)
+
+	os.system(f"cd {path} && git init")
+
+	with open(path + "/project.json", "w") as f :
+		json.dump(meta, f)
+
+	print("Running pre-package command:", templ["cmd"].replace("$t", path))
+	os.system(f"cd {path} && " + templ["cmd"].replace("$t", path))
+
+	ln = path[len(str(Path.home()))+1:path.rfind("/")]
+	add = getConfig("packages", {})[ln]["add"]
+
+	print("Getting libraries")
+
+	for i in templ["pack"] :
+		cmd = f"cd {path} && {add.replace("$x", i).replace("$t", path)}"
+		print(f"Running {cmd}")
+		os.system(cmd)
+
+	return path
+
+def createMode() :
+	if len(templates) > 0 :
+		temp = input("Would you like to use a template? (y/n) ").strip().lower()[0] == "y"
+	else :
+		temp = False
+
+	if temp :
+		path = createModeTempl()
+	else :
+		path = createModeNoTempl()
 
 	return projectMode(str(path))
 
@@ -650,9 +734,61 @@ def ideaMode() :
 
 			setConfig("ideas", ideas)
 
+def templateMode() :
+	while True :
+		print("Possible subcommands: exit, show, add, rm")
+		cmd = autocomplete(">>> ", ["exit", "show", "add", "rm"])
+
+		if cmd == "exit" :
+			return
+		elif cmd == "show" :
+			pritty = printJsonPritty(templates)
+			print("Templates:")
+			print(pritty)
+		elif cmd == "add" :
+			while True :
+				name = escapeText(input("Template Name: "))
+				print(f"Name set as '{name}'")
+
+				p_langs = langs
+				p_langs.extend([x[x.rfind("/")+1:] for x in langs])
+
+				base_lang = autocomplete("Template base language: ", p_langs)
+				base_lang = base_lang if base_lang.startswith("/") else str(Path.home() / base_lang)
+
+				dir = input("Template directory: ").strip()
+				dir = dir if dir.startswith("/") else str(Path.home() / dir)
+
+				entry = input(f"Main entry point (default: main.{extensions[base_lang[base_lang.rfind("/")+1:]]}): ")
+				entry = entry if entry else f"main.{extensions[base_lang[base_lang.rfind("/")+1:]]}"
+
+				cmd = input("Pre-package command: ").strip()
+				packages = input("Packages to get automatically: ").strip().split()
+
+				temp = {
+					"lang": base_lang,
+					"dir": dir,
+					"main": entry,
+					"cmd": cmd,
+					"pack": packages
+				}
+
+				mt = printJsonPritty(temp)
+				print("Template file created: ")
+				print(green(f"'{name}'") + ":", mt)
+				correct = input("Is this correct? (y/n) ").lower()[0] == "y"
+				if correct :
+					templates[name] = temp
+					setConfig("templates", templates)
+					break
+		elif cmd == "rm" :
+			name = autocomplete("Template to remove: ", list(templates.keys()))
+			templates.pop(name)
+			setConfig("templates", templates)
+
 def interactiveMode() :
-	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas")
-	mode = autocomplete(">>> ", ["exit", "langs", "project", "config", "create", "ideas"])
+	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas, templ")
+	mode = autocomplete(">>> ", ["exit", "langs", "project", "config", "create", "ideas", "templ"])
 
 	if mode == "exit": exit()
 
@@ -667,6 +803,8 @@ def interactiveMode() :
 		func = createMode
 	elif mode == "ideas" :
 		func = ideaMode
+	elif mode == "templ" :
+		func = templateMode
 
 	if func :
 		func()
