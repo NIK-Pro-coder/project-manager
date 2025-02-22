@@ -92,6 +92,9 @@ def setConfig(key: str, val: Any) :
 def getConfig(key: str, default: Any) :
 	return config[key] if key in config else default
 
+oncreate = getConfig("on-create", {})
+onload = getConfig("on-load", {})
+
 templates: dict = getConfig("templates", {})
 editor = getConfig("editor", "")
 ideas = getConfig("ideas", [])
@@ -418,7 +421,7 @@ def runCmd(path: str) :
 	lang = path[len(str(Path.home()))+1:path.rfind("/")]
 
 	if not lang in runs :
-		rn = input("Command to run this project: ")
+		rn = input("Command to run this project: (use $x for main entry point) ")
 		runs[lang] = rn
 
 		setConfig("run-scripts", runs)
@@ -532,6 +535,24 @@ def todoCmd(path: str) :
 	return 0
 
 def projectMode(path: str) :
+
+	lang = path[:path.rfind("/")]
+
+	if not lang in onload :
+		onload[lang] = ""
+		create = input(f"Lang '{lang}' has not onload command set, would you like ot do it now? (y/n) ").lower()[0] == "y"
+
+		if create :
+			cmd = input("Onload command: (use $t for project path) ")
+			onload[lang] = cmd
+
+		setConfig("on-load", onload)
+
+	if onload[lang] != "" :
+		cmd = f"cd {path} && {onload[lang].replace("$t", path)}"
+		print(f"Running onload command: '{cmd}'")
+		os.system(cmd)
+
 	cmds = {
 		"meta": metaCmd,
 		"open": openCmd,
@@ -663,7 +684,7 @@ def createModeNoTempl() :
 
 		if not lang in langs :
 			print(f"'{lang}' is not a registered language folder, please register it as such before continuing")
-			return
+			return -1
 
 		name = input("/create | Project name: ").strip()
 		name_esc = escapeText(name)
@@ -728,7 +749,7 @@ def createModeTempl() :
 
 		name = input("/create | Project name: ").strip()
 		name_esc = escapeText(name)
-		print(f"Escaped name: {name_esc}")
+		print(f"/create | Escaped name: {name_esc}")
 
 		desc = input("/create | Project description: ").strip()
 		desc = desc if desc else "<not set>"
@@ -787,6 +808,26 @@ def createMode() :
 		path = createModeTempl()
 	else :
 		path = createModeNoTempl()
+		if path == -1 :
+			return
+
+
+	lang = path[:path.rfind("/")]
+
+	if not lang in oncreate :
+		oncreate[lang] = ""
+		create = input(f"Lang '{lang}' has not oncreate command set, would you like ot do it now? (y/n) ").lower()[0] == "y"
+
+		if create :
+			cmd = input("Oncreate command: (use $t for project path) ")
+			oncreate[lang] = cmd
+
+		setConfig("on-create", oncreate)
+
+	if oncreate[lang] != "" :
+		cmd = f"cd {path} && {oncreate[lang].replace("$t", path)}"
+		print(f"Running oncreate command: '{cmd}'")
+		os.system(cmd)
 
 	return projectMode(str(path))
 
@@ -837,7 +878,7 @@ def templateMode() :
 			print(pritty)
 		elif cmd == "add" :
 			while True :
-				name = escapeText(input("Template Name: "))
+				name = escapeText(input("/tmpl/add | Template Name: "))
 				print(f"/tmpl/add | Name set as '{name}'")
 
 				p_langs = langs
