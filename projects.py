@@ -4,6 +4,43 @@ import os, json
 from pathlib import Path
 from typing import Any
 
+def green(text: str) -> str : return f"\033[92m{text}\033[00m"
+def aquamarine(text: str) -> str : return f"\033[96m'{text}'\033[00m"
+def blue(text: str) -> str : return f"\033[94m'{text}'\033[00m"
+
+indent = "  "
+def printJsonPritty(obj: Any, depth: int = 0) -> str :
+	string: str = ""
+
+	if type(obj) is dict :
+		string += indent * depth + "{\n"
+		for n,i in enumerate(obj) :
+			string += indent * (depth + 1) + printJsonPritty(i, 0) + ": " + printJsonPritty(obj[i], depth + 1).lstrip() + ("," if n < len(obj) - 1 else "") + "\n"
+		string += indent * depth + "}"
+
+	if type(obj) is list :
+		string += indent * depth + "[\n"
+		for n,i in enumerate(obj) :
+			string += printJsonPritty(i, depth + 1) + ("," if n < len(obj) - 1 else "") + "\n"
+		string += indent * depth + "]"
+
+	if type(obj) is str :
+		string = indent * depth + green(f"'{obj}'")
+
+	if obj == None :
+		string = indent * depth + "null"
+
+	if type(obj) is int :
+		string = indent * depth + aquamarine(str(obj))
+
+	if type(obj) is float :
+		string = indent * depth + aquamarine(str(obj))
+
+	if type(obj) is bool :
+		string = indent * depth + blue("true" if obj else "false")
+
+	return string
+
 config_path = str(Path.home() / ".config/project-manager/config.json")
 
 def autocomplete(query: str, possiblilities: list[str]) -> str :
@@ -183,13 +220,35 @@ if projects_in_folder == None :
 if projects_in_folder and not os.path.isdir(Path.home() / ".config/project-manager/projects") :
 	os.mkdir(Path.home() / ".config/project-manager/projects")
 
+def makeCompisitePath(path: str) :
+
+	p = path.split("/")[1:]
+	s = ""
+
+	for i in p :
+		s += "/" + i
+		if not os.path.isdir(s) :
+			os.mkdir(s)
+
+def dirTree(start_from: str) -> list[str] :
+	inside = os.listdir(start_from)
+
+	ret = []
+
+	for i in inside :
+		if os.path.isdir(start_from + "/" + i) :
+			ret.extend(dirTree(start_from + "/" + i))
+		else :
+			ret.append(start_from + "/" + i)
+
+	return ret
+
 if projects_in_folder :
 	for i in langs :
 		print(i)
 		if not os.path.isdir(Path.home() / (".config/project-manager/projects/" + i)) :
-			os.mkdir(Path.home() / (".config/project-manager/projects/" + i))
+			makeCompisitePath(str(Path.home() / (".config/project-manager/projects/" + i)))
 
-if projects_in_folder :
 	for i in langs :
 		for f in os.listdir(i) :
 			path: str = i + "/" + f
@@ -199,14 +258,16 @@ if projects_in_folder :
 						f.write(r.read())
 				os.remove(path + "/project.json")
 else :
-	for i in langs :
-			for f in os.listdir(i) :
-				path: str = i + "/" + f
-				if os.path.isfile(path + "/" + f + ".json") :
-					with open(path + "/project.json", "w") as file :
-						with open(path + "/" + f + ".json") as r :
-							file.write(r.read())
-					os.remove(path + "/" + f + ".json")
+	files = dirTree(str(Path.home() / ".config/project-manager/projects"))
+	files_stripped = [x.removeprefix(str(Path.home() / ".config/project-manager/projects")) for x in files]
+
+	for i in files_stripped :
+		print(i)
+		makeCompisitePath(i[:i.rfind("/")])
+
+		with open(i[:i.rfind(".")] + "/project.json", "w") as w :
+			with open(str(Path.home() / ".config/project-manager/projects") + i) as r :
+				w.write(r.read())
 
 print("Checking project files")
 for i in langs :
@@ -261,42 +322,6 @@ if rm :
 	for i in misplaced :
 		os.remove(i)
 
-def green(text: str) -> str : return f"\033[92m{text}\033[00m"
-def aquamarine(text: str) -> str : return f"\033[96m'{text}'\033[00m"
-def blue(text: str) -> str : return f"\033[94m'{text}'\033[00m"
-
-indent = "  "
-def printJsonPritty(obj: Any, depth: int = 0) -> str :
-	string: str = ""
-
-	if type(obj) is dict :
-		string += indent * depth + "{\n"
-		for n,i in enumerate(obj) :
-			string += indent * (depth + 1) + printJsonPritty(i, 0) + ": " + printJsonPritty(obj[i], depth + 1).lstrip() + ("," if n < len(obj) - 1 else "") + "\n"
-		string += indent * depth + "}"
-
-	if type(obj) is list :
-		string += indent * depth + "[\n"
-		for n,i in enumerate(obj) :
-			string += printJsonPritty(i, depth + 1) + ("," if n < len(obj) - 1 else "") + "\n"
-		string += indent * depth + "]"
-
-	if type(obj) is str :
-		string = indent * depth + green(f"'{obj}'")
-
-	if obj == None :
-		string = indent * depth + "null"
-
-	if type(obj) is int :
-		string = indent * depth + aquamarine(str(obj))
-
-	if type(obj) is float :
-		string = indent * depth + aquamarine(str(obj))
-
-	if type(obj) is bool :
-		string = indent * depth + blue("true" if obj else "false")
-
-	return string
 
 if no_project_file :
 	print("These files don't have a project file:")
@@ -306,13 +331,9 @@ if no_project_file :
 
 	if create :
 		for i in no_project_file :
-			meta = {
-				"name": i[i.rfind("/")+1:],
-				"desc": "<not set>",
-				"revision": 0,
-				"last-modified": os.stat(i).st_mtime,
-				"main": ""
-			}
+			meta = meta_structure.copy()
+			meta["name"] = i[i.rfind("/")+1:]
+
 			print(printJsonPritty(meta))
 			if projects_in_folder :
 				with open(Path.home() / ".config/project-manager/projects" / (i + ".json"), "w") as f :
