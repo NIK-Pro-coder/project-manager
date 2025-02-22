@@ -96,12 +96,6 @@ templates: dict = getConfig("templates", {})
 editor = getConfig("editor", "")
 ideas = getConfig("ideas", [])
 
-if editor == "" :
-	print("Looks like you haven't configured an editor")
-	ide = input("With what command should I open the directory $x: ")
-
-	setConfig("editor", ide)
-
 langs = getConfig("langs", [])
 
 if not langs :
@@ -158,36 +152,12 @@ for i in langs :
 	print(f"Checking '{l}'")
 
 	if not l in extensions :
-		ex = input("File extension fo lang: ")
+		ex = input(f"File extension for lang (default = .{l}): ").removeprefix(".")
 
 		extensions[l] = ex
 		setConfig("extensions", extensions)
 
-	if not l in runs :
-		rn = input("Command to run the project: ")
-		runs[l] = rn
-
-		setConfig("run-scripts", runs)
-
-	if not l in packs :
-		print(f"Lang '{l}' does not have a package manager defined")
-		packs[l] = {}
-
-	if not "add" in packs[l] :
-		packs[l]["add"] = input("Command to install library $x: ")
-
-	if not "rm" in packs[l] :
-		packs[l]["rm"] = input("Command to remove a library $x: ")
-
-	if not "search" in packs[l] :
-		packs[l]["search"] = input("Command to search for a library $x: ")
-
-	if not "list" in packs[l] :
-		packs[l]["list"] = input("Command to list installed packages: ")
-
 	print(f"Lang '{l}' ok")
-
-	setConfig("packages", packs)
 
 rm_misplaced: bool | None = getConfig("rm-misplaced", None)
 misplaced: list[str] = []
@@ -262,7 +232,6 @@ else :
 	files_stripped = [x.removeprefix(str(Path.home() / ".config/project-manager/projects")) for x in files]
 
 	for i in files_stripped :
-		print(i)
 		makeCompisitePath(i[:i.rfind("/")])
 
 		with open(i[:i.rfind(".")] + "/project.json", "w") as w :
@@ -294,7 +263,7 @@ for i in langs :
 						json.dump(proj, f)
 			else :
 				if not os.path.isfile(path + "/project.json") :
-					if not "backup" in f or not create_backup :
+					if not("backup" in f) or not(create_backup) :
 						no_project_file.append(path)
 				else :
 					with open(path + "/project.json") as f :
@@ -384,6 +353,12 @@ def metaCmd(path: str) :
 
 def openCmd(path: str) -> int :
 
+	if editor == "" :
+		print("Looks like you haven't configured an editor")
+		ide = input("Command to open the project: (use $x for project dir) ")
+
+		setConfig("editor", ide)
+
 	print("Opening project")
 	ide = getConfig("editor", "")
 
@@ -394,40 +369,61 @@ def openCmd(path: str) -> int :
 def packCmd(path: str) -> int :
 	lang = path[len(str(Path.home()))+1:path.rfind("/")]
 
-	commands = getConfig("packages", {})[lang]
+	if not lang in packs :
+		packs[lang] = {}
+		setConfig("packages", packs)
+
+	commands = packs[lang]
 
 	print("Possible subcommands: add, rm, search, list")
 	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/pack >>> ", ["add", "rm", "list"]).strip().lower()
 
 	if cmd == "add" :
+		if not "add" in packs[lang] :
+			packs[lang]["add"] = input("Command to install library: (use $x for library name and $t for target dir) ")
+			setConfig("packages", packs)
+
 		lib = input(f"/project{path[len(str(Path.home())):]}/pack/add | Library to add: ").strip()
 		if lib == "" : return 0
-		cmd = f"cd {path} && {commands["add"].replace("$x", lib).replace("$t", path)}"
-		print(f"Running {cmd}")
-		os.system(cmd)
+		cmd_run = f"cd {path} && {commands["add"].replace("$x", lib).replace("$t", path)}"
 	elif cmd == "rm" :
+		if not "rm" in packs[lang] :
+			packs[lang]["rm"] = input("Command to remove a library: (use $x for library name and $t for target dir) ")
+			setConfig("packages", packs)
+
 		lib = input(f"/project{path[len(str(Path.home())):]}/pack/rm | Library to remove: ").strip()
 		if lib == "" : return 0
-		cmd = f"cd {path} && {commands["rm"].replace("$x", lib).replace("$t", path)}"
-		print(f"Running {cmd}")
-		os.system(cmd)
+		cmd_run = f"cd {path} && {commands["rm"].replace("$x", lib).replace("$t", path)}"
 	elif cmd == "search" :
+		if not "search" in packs[lang] :
+			packs[lang]["search"] = input("Command to search for a library: (use $x for library name and $t for target dir) ")
+			setConfig("packages", packs)
+
 		lib = input(f"/project{path[len(str(Path.home())):]}/pack/search | Keywords to search: ").strip()
 		if lib == "" : return 0
-		cmd = f"cd {path} && {commands["search"].replace("$x", lib).replace("$t", path)}"
-		print(f"Running {cmd}")
-		os.system(cmd)
+		cmd_run = f"cd {path} && {commands["search"].replace("$x", lib).replace("$t", path)}"
 	elif cmd == "list" :
-		cmd = f"cd {path} && {commands["list"]}"
-		print(f"Running {cmd}")
-		os.system(cmd)
+		if not "list" in packs[lang] :
+			packs[lang]["list"] = input("Command to list installed packages: (use $t for project dir) ")
+			setConfig("packages", packs)
+
+		cmd_run = f"cd {path} && {commands["list"]}"
+
+	print(f"Running {cmd_run}")
+	os.system(cmd_run)
 
 	return 1
 
 def runCmd(path: str) :
 	lang = path[len(str(Path.home()))+1:path.rfind("/")]
 
-	script = getConfig("run-scripts", {})[lang]
+	if not lang in runs :
+		rn = input("Command to run this project: ")
+		runs[lang] = rn
+
+		setConfig("run-scripts", runs)
+
+	script = runs[lang]
 	main = getMetadata(path)["main"]
 
 	if main == "" :
