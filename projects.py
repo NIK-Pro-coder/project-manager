@@ -291,17 +291,18 @@ def autocomplete(query: str, possiblilities: list[str]) -> str :
 	fil: list[str] = [x for x in possiblilities if x.startswith(got)]
 	fil = list(set(fil))
 
+	if len(fil) == 1 :
+		print(f"\033[F{yellow(query)}{fil[0]}")
+		return fil[0]
+
 	if len(fil) == 0 or got == "" :
 		print("Nothing matched, possible values:")
 		prittyList(possiblilities)
-		return autocomplete(query, possiblilities)
 	elif len(fil) > 1 :
 		print("Possibilities:")
 		prittyList(fil)
-		return autocomplete(query, fil)
-	else :
-		print(f"\033[F{yellow(query)}{fil[0]}")
-		return fil[0]
+
+	return autocomplete(query, possiblilities)
 
 try :
 	with open(config_path) as f :
@@ -692,7 +693,7 @@ def generateReadme(path: str) :
 	readme += "\n---\n\n"
 
 	readme += "Todos:\n"
-	meta["todos"].sort(key = lambda x: x["points"])
+	meta["todos"].sort(key = lambda x: -x["points"])
 	for i in meta["todos"] :
 		readme += f" - [{"x" if i["completed"] else " "}] {i["label"]} {" ".join(f"`{x}`" for x in i["tags"])}\n"
 
@@ -745,8 +746,11 @@ def gitCmd(path: str) :
 		})
 		setMetadata(path, "commits", cm)
 
-		print(yellow("Generating README.md"))
-		generateReadme(path)
+		if askyesno(f"/project{path[len(str(Path.home())):]}/git/commit | Would you like to autogenerate a README.md? ") :
+			print(yellow("Generating README.md"))
+			generateReadme(path)
+
+			input("If you'd like to edit the generated README.md do it now (ENTER to continue)")
 
 		ret = os.system(f"cd {path} && git add . && git commit -m \"{msg}\" && git push")
 

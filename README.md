@@ -4,14 +4,15 @@ A little python script that helps manage projects and ideas
 ---
 
 Todos:
- - [x] Test motivation 
- - [x] Do things `test` `debug`
  - [x] Test autocomplete `test`
  - [x] Test level system `debug`
+ - [x] Do things `test` `debug`
+ - [x] Test motivation 
 
 ---
 
 Latest commits:
+ - `2025/02/23 16:27:50` "Changed autogeneration of README.md"
  - `2025/02/23 16:22:36` "Changed autogeneration on README.md"
  - `2025/02/23 16:15:35` "Changed formatting of possibilities for autocomplete"
  - `2025/02/23 11:47:46` "Changed motivational lines"
