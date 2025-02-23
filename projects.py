@@ -747,10 +747,10 @@ def gitCmd(path: str) :
 		setMetadata(path, "commits", cm)
 
 		if askyesno(f"/project{path[len(str(Path.home())):]}/git/commit | Would you like to autogenerate a README.md? ") :
-			print(yellow("Generating README.md"))
+			print(yellow(f"/project{path[len(str(Path.home())):]}/git/commit | Generating README.md"))
 			generateReadme(path)
 
-			input("If you'd like to edit the generated README.md do it now (ENTER to continue)")
+			input(f"/project{path[len(str(Path.home())):]}/git/commit | If you'd like to edit the generated README.md do it now (ENTER to continue)")
 
 		ret = os.system(f"cd {path} && git add . && git commit -m \"{msg}\" && git push")
 
