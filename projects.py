@@ -269,16 +269,35 @@ def askyesno(query: str) -> bool :
 	print("Please use 'y' or 'n'")
 	return askyesno(query)
 
+def prittyList(items: list[str]) :
+	longest = max(len(x) + 1 for x in items)
+
+	width = os.get_terminal_size().columns
+
+	per_line = (width - 1) / longest
+
+	id = 0
+	print("", end = " ")
+	for i in items :
+		print(f"{i:<{longest}}", end = " ")
+		id += 1
+		if id == per_line :
+			print("\n", end = " ")
+			id = 0
+	print("\n", end = "")
+
 def autocomplete(query: str, possiblilities: list[str]) -> str :
 	got: str = input(yellow(query)).strip()
 	fil: list[str] = [x for x in possiblilities if x.startswith(got)]
 	fil = list(set(fil))
 
 	if len(fil) == 0 or got == "" :
-		print("Nothing matched, possible values:", ", ".join(possiblilities))
+		print("Nothing matched, possible values:")
+		prittyList(possiblilities)
 		return autocomplete(query, possiblilities)
 	elif len(fil) > 1 :
-		print("Possibilities:", ", ".join(fil))
+		print("Possibilities:")
+		prittyList(fil)
 		return autocomplete(query, fil)
 	else :
 		print(f"\033[F{yellow(query)}{fil[0]}")
@@ -748,7 +767,7 @@ def showTodo(path: str) :
 
 	print("This projects todos:")
 	for i in todo :
-		print(" -", i["label"], f"({i["points"]} points)", "\033[92m(completed)\033[00m" if i["completed"] else "", "Tags: " + ", ".join(i["tags"]))
+		print(" -", i["label"], f"({i["points"]} points)", "\033[92m(completed)\033[00m" if i["completed"] else "", ("Tags: " + ", ".join(i["tags"]) if len(i["tags"])>0 else ""))
 	p_norm = points%30
 	print("Points:", p_norm, "[" + "#" * p_norm + "-" * (30 - p_norm) + "]", end = " ")
 	print("Level:", int(points / 30))

@@ -1,4 +1,4 @@
-## projects
+## PyProjectManager
 A little python script that helps manage projects and ideas
 
 ---
@@ -12,6 +12,7 @@ Todos:
 ---
 
 Latest commits:
+ - 2025-02-23 16:15:35 `Changed formatting of possibilities for autocomplete`
  - 2025-02-23 11:47:46 `Changed motivational lines`
  - 2025-02-23 10:39:04 `Fized issue when saving project metadata`
  - 2025-02-20 17:49:23 `Added support for templates`
