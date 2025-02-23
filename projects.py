@@ -694,14 +694,14 @@ def generateReadme(path: str) :
 	readme += "Todos:\n"
 	meta["todos"].sort(key = lambda x: x["points"])
 	for i in meta["todos"] :
-		readme += f" - {i["label"]} ({"completed" if i["completed"] else "incomplete"}) {" ".join(f"`{x}`" for x in i["tags"])}\n"
+		readme += f" - [{"x" if i["completed"] else " "}] {i["label"]} {" ".join(f"`{x}`" for x in i["tags"])}\n"
 
 	readme += "\n---\n\n"
 
 	readme += "Latest commits:\n"
 	for i in meta["commits"][::-1] :
-		time_str = datetime.fromtimestamp(i["time"], UTC).strftime('%Y-%m-%d %H:%M:%S')
-		readme += f" - {time_str} `{i["message"]}`\n"
+		time_str = datetime.fromtimestamp(i["time"], UTC).strftime('%Y/%m/%d %H:%M:%S')
+		readme += f" - `{time_str}` \"{i["message"]}\"\n"
 
 	with open(path + "/README.md", "w") as f :
 		f.write(readme)
