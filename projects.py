@@ -567,9 +567,9 @@ def setMetadata(path: str, key: str, value: Any) :
 
 	if projects_in_folder :
 		with open(Path.home() / (".config/project-manager/projects" + path + ".json"), "w") as f :
-			f.write(json.dumps(meta))
+			json.dump(meta, f)
 	else :
-		with open(i + "/project.json", "w") as f :
+		with open(path + "/project.json", "w") as f :
 			f.write(json.dumps(meta))
 
 def metaCmd(path: str) :
@@ -673,14 +673,14 @@ def generateReadme(path: str) :
 	readme += "Todos:\n"
 	meta["todos"].sort(key = lambda x: x["points"])
 	for i in meta["todos"] :
-		readme += f" - {i["label"]} ({"completed" if i["completed"] else "incomplete"}) Tags: {", ".join(i["tags"])}\n"
+		readme += f" - {i["label"]} ({"completed" if i["completed"] else "incomplete"}) {" ".join(f"`{x}`" for x in i["tags"])}\n"
 
 	readme += "\n---\n\n"
 
 	readme += "Latest commits:\n"
 	for i in meta["commits"][::-1] :
 		time_str = datetime.fromtimestamp(i["time"], UTC).strftime('%Y-%m-%d %H:%M:%S')
-		readme += f" - {time_str} | {i["message"]}\n"
+		readme += f" - {time_str} `{i["message"]}`\n"
 
 	with open(path + "/README.md", "w") as f :
 		f.write(readme)
@@ -711,12 +711,11 @@ def gitCmd(path: str) :
 
 		cm = getMetadata(path)["commits"]
 
-		meta = getMetadata(path)
-		meta["commits"].append({
+		cm.append({
 			"message": msg,
 			"time": time.time()
 		})
-		setMetadata(path, "commits", meta["commits"])
+		setMetadata(path, "commits", cm)
 
 		print(yellow("Generating README.md"))
 		generateReadme(path)
@@ -728,12 +727,6 @@ def gitCmd(path: str) :
 
 			line = random.choice(programming_motivation)
 			print(green(line))
-		else :
-			cm = getMetadata(path)["commits"]
-
-			meta = getMetadata(path)
-			meta["commits"].pop(-1)
-			setMetadata(path, "commits", meta["commits"])
 	elif cmd == "pull" :
 		ret = os.system(f"cd {path} && git pull")
 		if ret == 0 : print("Commit pulled successfully!")
