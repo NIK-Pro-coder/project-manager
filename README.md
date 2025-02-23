@@ -4,6 +4,7 @@ A little python script that helps manage projects and ideas
 ---
 
 Todos:
+ - Test motivation (completed) 
  - Do things (completed) `test` `debug`
  - Test autocomplete (completed) `test`
  - Test level system (completed) `debug`
@@ -11,6 +12,7 @@ Todos:
 ---
 
 Latest commits:
+ - 2025-02-23 11:47:46 `Changed motivational lines`
  - 2025-02-23 10:39:04 `Fized issue when saving project metadata`
  - 2025-02-20 17:49:23 `Added support for templates`
  - 2025-02-20 15:23:32 `Made program runnable`

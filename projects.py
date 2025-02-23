@@ -220,6 +220,8 @@ def aquamarine(text: str) -> str : return f"\033[96m'{text}'\033[00m"
 def blue(text: str) -> str : return f"\033[94m'{text}'\033[00m"
 def yellow(text: str) -> str : return f"\033[93m{text}\033[00m"
 
+def bold(text: str) -> str : return f"\033[1m{text}\033[00m"
+
 indent = "  "
 def printJsonPritty(obj: Any, depth: int = 0) -> str :
 	string: str = ""
@@ -256,7 +258,7 @@ def printJsonPritty(obj: Any, depth: int = 0) -> str :
 config_path = str(Path.home() / ".config/project-manager/config.json")
 
 def ask(query: str) -> str :
-	return input(yellow(query))
+	return input(yellow(query)).strip()
 
 def askyesno(query: str) -> bool :
 	ins = ask(query + "(y/n) ").lower()
@@ -685,6 +687,13 @@ def generateReadme(path: str) :
 	with open(path + "/README.md", "w") as f :
 		f.write(readme)
 
+def giveMotivation(lines: list[str], amount = 1) :
+	seen = []
+	for i in range(amount) :
+		ln = random.choice([x for x in lines])
+		seen.append(ln)
+		print(bold(green(ln)))
+
 def gitCmd(path: str) :
 	print("Possible subommands: link, commit, pull, exit, generate")
 	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/git >>> ", ["link", "commit", "pull", "generate", "exit"]).strip()
@@ -725,8 +734,7 @@ def gitCmd(path: str) :
 		if ret == 0 :
 			print("Commit pushed successfully!")
 
-			line = random.choice(programming_motivation)
-			print(green(line))
+			giveMotivation(programming_motivation, 5)
 	elif cmd == "pull" :
 		ret = os.system(f"cd {path} && git pull")
 		if ret == 0 : print("Commit pulled successfully!")
@@ -757,12 +765,12 @@ def todoCmd(path: str) :
 		showTodo(path)
 	elif cmd == "add" :
 		label = ask(f"/project{path[len(str(Path.home())):]}/todo/add | This todo's label: ")
-		p = ask("Amount of points to reward: ")
+		p = ask(f"/project{path[len(str(Path.home())):]}/todo/add | Amount of points to reward: ")
 		if not p.isdecimal() :
 			print(p, "is not a number")
 			return 0
 
-		tags = input("This todo's tags: ").strip().split()
+		tags = ask(f"/project{path[len(str(Path.home())):]}/todo/add | This todo's tags: ").split()
 
 		points = int(p)
 
@@ -785,11 +793,10 @@ def todoCmd(path: str) :
 				setMetadata(path, "points", p)
 				setMetadata(path, "todos", todo)
 
-				line = random.choice(general_motivation)
-				print(green(line))
+				giveMotivation(general_motivation, 5)
 				return 0
 
-		print("No uncompleted todo named:", label)
+		print("/project{path[len(str(Path.home())):]}/todo/add | No uncompleted todo named:", label)
 
 	return 0
 
