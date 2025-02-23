@@ -209,10 +209,11 @@ general_motivation = [
     "You prove that time management is an art!"
 ]
 
-
 import os, json, random
+
 from pathlib import Path
 from typing import Any
+from datetime import datetime, UTC
 
 def green(text: str) -> str : return f"\033[92m{text}\033[00m"
 def aquamarine(text: str) -> str : return f"\033[96m'{text}'\033[00m"
@@ -256,6 +257,15 @@ config_path = str(Path.home() / ".config/project-manager/config.json")
 
 def ask(query: str) -> str :
 	return input(yellow(query))
+
+def askyesno(query: str) -> bool :
+	ins = ask(query + "(y/n) ").lower()
+
+	if ins == "y" : return True
+	if ins == "n" : return False
+
+	print("Please use 'y' or 'n'")
+	return askyesno(query)
 
 def autocomplete(query: str, possiblilities: list[str]) -> str :
 	got: str = input(yellow(query)).strip()
@@ -317,8 +327,8 @@ langs = getConfig("langs", [])
 
 if not langs :
 	toadd = []
-	print("You can change alnguage folders later but it requires a restart to get configured properly")
-	select = ask("There are no language files in the config, would you like to autoselect them? (y/n) ").lower()[0] == "y"
+	print("You can change language folders later but it requires a restart to get configured properly")
+	select = askyesno("There are no language files in the config, would you like to autoselect them? ")
 	homedirs = [str(Path.home() / x) for x in os.listdir(Path.home()) if os.path.isdir(Path.home() / x) and x[0] != "."]
 
 	if select :
@@ -331,7 +341,7 @@ if not langs :
 		print("Folders that will be added:")
 		for i in toadd :
 			print(" -", i)
-		correct = ask("Is this correct? (y/n) ").lower()[0] == "y"
+		correct = askyesno("Is this correct? ")
 
 		if correct :
 			langs = toadd
@@ -392,14 +402,13 @@ meta_structure: dict[str, str | float | int | list[dict[str, int | str | bool]]]
 
 create_backup: bool | None = getConfig("create-backups", None)
 if create_backup == None :
-	print("This program creates a file called project.json for every project file you have")
-	create_backup = ask("Would you like to skip this step for filders that have 'backup' in their name? (y/n) ").lower()[0] == "y"
+	create_backup = askyesno("Would you like to ignore folders that have 'backup' in their name? ")
 
 	setConfig("create-backups", create_backup)
 
 projects_in_folder: bool | None = getConfig("projects-in-folder", None)
 if projects_in_folder == None :
-	projects_in_folder = ask("Would you like to move project files all to a signle folder? (y/n) ").lower()[0] == "y"
+	projects_in_folder = askyesno("Would you like to move project files all to a signle folder? ")
 
 	setConfig("projects-in-folder", projects_in_folder)
 
@@ -450,9 +459,10 @@ else :
 	for i in files_stripped :
 		makeCompisitePath(i[:i.rfind("/")])
 
-		with open(i[:i.rfind(".")] + "/project.json", "w") as w :
-			with open(str(Path.home() / ".config/project-manager/projects") + i) as r :
-				w.write(r.read())
+		if not os.path.isfile(i[:i.rfind(".")] + "/project.json"):
+			with open(i[:i.rfind(".")] + "/project.json", "w") as w :
+				with open(str(Path.home() / ".config/project-manager/projects") + i) as r :
+					w.write(r.read())
 
 print("Checking project files")
 for i in langs :
@@ -498,7 +508,7 @@ if rm_misplaced == None :
 	print("These files seem to be misplaced:")
 	for i in misplaced :
 		print(" -", i)
-	rm = ask("Do you want to remove them? (y/n) ").lower()[0] == "y"
+	rm = askyesno("Do you want to remove them? ")
 else :
 	rm = rm_misplaced
 
@@ -512,7 +522,7 @@ if no_project_file :
 	print("These files don't have a project file:")
 	for i in no_project_file :
 		print(" -", i)
-	create = ask("Do you want to create them? (y/n) ").lower()[0] == "y"
+	create = askyesno("Do you want to create them? ")
 
 	if create :
 		for i in no_project_file :
@@ -652,9 +662,32 @@ def runCmd(path: str) :
 
 import time
 
+def generateReadme(path: str) :
+	meta = getMetadata(path)
+
+	readme = f"## {meta["name"]}\n"
+	readme += meta["desc"] + "\n"
+
+	readme += "\n---\n\n"
+
+	readme += "Todos:\n"
+	meta["todos"].sort(key = lambda x: x["points"])
+	for i in meta["todos"] :
+		readme += f" - {i["label"]} ({"completed" if i["completed"] else "incomplete"}) Tags: {", ".join(i["tags"])}\n"
+
+	readme += "\n---\n\n"
+
+	readme += "Latest commits:\n"
+	for i in meta["commits"][::-1] :
+		time_str = datetime.fromtimestamp(i["time"], UTC).strftime('%Y-%m-%d %H:%M:%S')
+		readme += f" - {time_str} | {i["message"]}\n"
+
+	with open(path + "/README.md", "w") as f :
+		f.write(readme)
+
 def gitCmd(path: str) :
-	print("Possible subommands: link, commit, pull, exit")
-	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/git >>> ", ["link", "commit", "pull", "exit"]).strip()
+	print("Possible subommands: link, commit, pull, exit, generate")
+	cmd = autocomplete(f"/project{path[len(str(Path.home())):]}/git >>> ", ["link", "commit", "pull", "generate", "exit"]).strip()
 
 	if cmd == "exit" :
 		return
@@ -676,26 +709,37 @@ def gitCmd(path: str) :
 	elif cmd == "commit" :
 		msg = ask(f"/project{path[len(str(Path.home())):]}/git/commit | Commit message: ")
 
+		cm = getMetadata(path)["commits"]
+
+		meta = getMetadata(path)
+		meta["commits"].append({
+			"message": msg,
+			"time": time.time()
+		})
+		setMetadata(path, "commits", meta["commits"])
+
+		print(yellow("Generating README.md"))
+		generateReadme(path)
+
 		ret = os.system(f"cd {path} && git add . && git commit -m \"{msg}\" && git push")
 
 		if ret == 0 :
 			print("Commit pushed successfully!")
-			cm = getMetadata(path)["commits"]
-			cm.append(msg)
-			setMetadata(path, "commits", cm)
-
-			meta = getMetadata(path)
-			meta["commits"].append({
-				"message": msg,
-				"time": time.time()
-			})
-			setMetadata(path, "commits", meta["commits"])
 
 			line = random.choice(programming_motivation)
 			print(green(line))
+		else :
+			cm = getMetadata(path)["commits"]
+
+			meta = getMetadata(path)
+			meta["commits"].pop(-1)
+			setMetadata(path, "commits", meta["commits"])
 	elif cmd == "pull" :
 		ret = os.system(f"cd {path} && git pull")
 		if ret == 0 : print("Commit pulled successfully!")
+	elif cmd == "generate" :
+		generateReadme(path)
+		print(green("Generated README.md"))
 
 def showTodo(path: str) :
 	todo = getMetadata(path)["todos"]
@@ -703,7 +747,7 @@ def showTodo(path: str) :
 
 	print("This projects todos:")
 	for i in todo :
-		print(" -", i["label"], f"({i["points"]} points)", "\033[92m(completed)\033[00m" if i["completed"] else "")
+		print(" -", i["label"], f"({i["points"]} points)", "\033[92m(completed)\033[00m" if i["completed"] else "", "Tags: " + ", ".join(i["tags"]))
 	p_norm = points%30
 	print("Points:", p_norm, "[" + "#" * p_norm + "-" * (30 - p_norm) + "]", end = " ")
 	print("Level:", int(points / 30))
@@ -725,12 +769,15 @@ def todoCmd(path: str) :
 			print(p, "is not a number")
 			return 0
 
+		tags = input("This todo's tags: ").strip().split()
+
 		points = int(p)
 
 		todo.append({
 			"label": label,
 			"points": points,
-			"completed": False
+			"completed": False,
+			"tags": tags
 		})
 
 		setMetadata(path, "todos", todo)
@@ -759,7 +806,7 @@ def projectMode(path: str) :
 
 	if not lang in onload :
 		onload[lang] = ""
-		create = ask(f"Lang '{lang}' has not onload command set, would you like ot do it now? (y/n) ").lower()[0] == "y"
+		create = askyesno(f"Lang '{lang}' has not onload command set, would you like ot do it now? ")
 
 		if create :
 			cmd = ask("Onload command: (use $t for project path) ")
@@ -858,7 +905,7 @@ def folderEditMode() :
 				for i in add :
 					print(" -", i)
 
-				correct = ask("/langs/add | Is this correct? (y/n) ").lower()[0] == "y"
+				correct = askyesno("/langs/add | Is this correct? ")
 				if correct :
 					langs.extend(add)
 					setConfig("langs", langs)
@@ -873,7 +920,7 @@ def folderEditMode() :
 				for i in add :
 					print(" -", i)
 
-				correct = ask("/langs/rm | Is this correct? (y/n) ").lower()[0] == "y"
+				correct = askyesno("/langs/rm | Is this correct? ")
 				if correct :
 					for i in add :
 						if i in langs :
@@ -927,7 +974,7 @@ def createModeNoTempl() :
 		mt = printJsonPritty(meta)
 		print("Meta file created:")
 		print(mt)
-		correct = ask("/create | Is this correct? (y/n) ").lower()[0] == "y"
+		correct = askyesno("/create | Is this correct? ")
 		if correct :
 			break
 
@@ -983,7 +1030,7 @@ def createModeTempl() :
 		mt = printJsonPritty(meta)
 		print("Meta file created:")
 		print(mt)
-		correct = ask("/create | Is this correct? (y/n) ").lower()[0] == "y"
+		correct = askyesno("/create | Is this correct? ")
 		if correct :
 			break
 
@@ -1019,7 +1066,7 @@ def createModeTempl() :
 
 def createMode() :
 	if len(templates) > 0 :
-		temp = ask("/create | Would you like to use a template? (y/n) ").strip().lower()[0] == "y"
+		temp = askyesno("/create | Would you like to use a template? ")
 	else :
 		temp = False
 
@@ -1035,7 +1082,7 @@ def createMode() :
 
 	if not lang in oncreate :
 		oncreate[lang] = ""
-		create = ask(f"Lang '{lang}' has not oncreate command set, would you like ot do it now? (y/n) ").lower()[0] == "y"
+		create = askyesno(f"Lang '{lang}' has not oncreate command set, would you like ot do it now? ")
 
 		if create :
 			cmd = ask("Oncreate command: (use $t for project path) ")
@@ -1126,7 +1173,7 @@ def templateMode() :
 				mt = printJsonPritty(temp)
 				print("Template file created: ")
 				print(green(f"'{name}'") + ":", mt)
-				correct = ask("/tmpl/add | Is this correct? (y/n) ").lower()[0] == "y"
+				correct = askyesno("/tmpl/add | Is this correct? ")
 				if correct :
 					templates[name] = temp
 					setConfig("templates", templates)
