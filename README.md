@@ -12,6 +12,7 @@ Todos:
 ---
 
 Latest commits:
+ - `2025/02/24 14:39:04` "Added auto-opening on last opened project"
  - `2025/02/24 14:27:20` "Changed project selection"
  - `2025/02/23 16:30:01` "Bug :("
  - `2025/02/23 16:28:50` "Changed generation of README.md"

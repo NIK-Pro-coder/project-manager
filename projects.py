@@ -861,6 +861,20 @@ def projectMode(path: str) :
 		while ex == 0 :
 			ex = cmds[cmd](path)
 
+def openProject(path: str) :
+	setConfig("last-opened", path)
+
+	last_update = os.stat(path).st_mtime
+	meta = getMetadata(path)
+
+	if last_update > meta["last-modified"] :
+		setMetadata(path, "last-modified", last_update)
+		setMetadata(path, "revision", meta["revision"] + 1)
+
+	showTodo(path)
+
+	return projectMode(path)
+
 def projectLoadMode() :
 	p_langs = [x[x.rfind("/")+1:] for x in langs]
 
@@ -883,16 +897,7 @@ def projectLoadMode() :
 		print(f"'{path}' is not a project!")
 		return 0
 
-	last_update = os.stat(path).st_mtime
-	meta = getMetadata(str(path))
-
-	if last_update > meta["last-modified"] :
-		setMetadata(str(path), "last-modified", last_update)
-		setMetadata(str(path), "revision", meta["revision"] + 1)
-
-	showTodo(str(path))
-
-	return projectMode(str(path))
+	return openProject(str(path))
 
 def folderEditMode() :
 	while True :
@@ -1232,6 +1237,12 @@ def interactiveMode() :
 
 	if func :
 		func()
+
+last_open = getConfig("last-opened", "")
+
+if last_open != "" :
+	print(yellow(f"Opening '{last_open}'"))
+	openProject(last_open)
 
 while True :
 	interactiveMode()
