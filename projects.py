@@ -862,25 +862,20 @@ def projectMode(path: str) :
 			ex = cmds[cmd](path)
 
 def projectLoadMode() :
-	print("(exit to abort) Select a project: [lang]/[name]")
-
 	p_langs = [x[x.rfind("/")+1:] for x in langs]
-	p_langs.append("exit")
 
-	ins = autocomplete("/project >>> ", p_langs)
+	ins = autocomplete("/project | Project language: ", p_langs)
 	if ins == "exit" : return 1
 
-	lang, name = map(str.strip, ins.split("/")) if "/" in ins else (ins, "")
+	lang = ins.strip()
 
-	if name == "" :
-		projects = [x for x in os.listdir(Path.home() / lang) if os.path.isdir(Path.home() / lang / x)]
-		projects.sort()
-		print("Availible projects:")
-		for i in projects :
-			print(" -", i)
-		p_projects = projects
-		p_projects.extend([x[x.rfind("/")+1:] for x in projects])
-		name = autocomplete(f"/project/{lang} | Project name: ", p_projects).strip()
+	projects = [x for x in os.listdir(Path.home() / lang) if os.path.isdir(Path.home() / lang / x)]
+	projects.sort()
+	print("Availible projects:")
+	prittyList(projects)
+	p_projects = projects
+	p_projects.extend([x[x.rfind("/")+1:] for x in projects])
+	name = autocomplete(f"/project/{lang} | Project name: ", p_projects).strip()
 
 	path = Path.home() / lang / name
 
@@ -1072,11 +1067,20 @@ def createModeTempl() :
 		with open(path + "/project.json", "w") as f :
 			json.dump(meta, f)
 
-	print("Running pre-package command:", templ["cmd"].replace("$t", path))
-	os.system(f"cd {path} && " + templ["cmd"].replace("$t", path))
+	if templ["cmd"] != "" :
+		print("Running pre-package command:", templ["cmd"].replace("$t", path))
+		os.system(f"cd {path} && " + templ["cmd"].replace("$t", path))
 
 	ln = path[len(str(Path.home()))+1:path.rfind("/")]
-	add = getConfig("packages", {})[ln]["add"]
+	if not ln in packs :
+		packs[ln] = {}
+		setConfig("packages", packs)
+
+	if not "add" in packs[ln] :
+		packs[ln]["add"] = ask("Command to install library: (use $x for library name and $t for target dir) ")
+		setConfig("packages", packs)
+
+	add = packs[ln]["add"]
 
 	print("Getting libraries")
 
