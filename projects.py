@@ -738,6 +738,9 @@ def gitCmd(path: str) :
 	elif cmd == "commit" :
 		msg = ask(f"/project{path[len(str(Path.home())):]}/git/commit | Commit message: ")
 
+		if not askyesno(f"/project{path[len(str(Path.home())):]}/git/commit | Is this correct? ") :
+			return
+
 		cm = getMetadata(path)["commits"]
 
 		cm.append({
@@ -757,7 +760,7 @@ def gitCmd(path: str) :
 		if ret == 0 :
 			print("Commit pushed successfully!")
 
-			giveMotivation(programming_motivation, 5)
+			giveMotivation(programming_motivation)
 	elif cmd == "pull" :
 		ret = os.system(f"cd {path} && git pull")
 		if ret == 0 : print("Commit pulled successfully!")
@@ -816,7 +819,7 @@ def todoCmd(path: str) :
 				setMetadata(path, "points", p)
 				setMetadata(path, "todos", todo)
 
-				giveMotivation(general_motivation, 5)
+				giveMotivation(general_motivation)
 				return 0
 
 		print("/project{path[len(str(Path.home())):]}/todo/add | No uncompleted todo named:", label)
