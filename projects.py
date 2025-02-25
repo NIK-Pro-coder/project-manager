@@ -208,6 +208,108 @@ general_motivation = [
     "Your ability to make time for what matters is incredible!",
     "You prove that time management is an art!"
 ]
+coding_motivation = [
+    "Every great program starts with a single line of code!",
+    "Just start coding, momentum will carry you forward!",
+    "The best way to learn is by doing, get coding now!",
+    "Every bug you fix is a step toward mastery!",
+    "Code is like magic, wield your power wisely!",
+    "Programming is problem-solving, take it one step at a time!",
+    "Small progress is still progress, just keep coding!",
+    "Your future self will thank you for coding today!",
+    "Every great developer started where you are now!",
+    "The more you code, the better you get, keep going!",
+    "Coding is a superpower, use it to create something amazing!",
+    "Even experts Google things, don’t be afraid to learn!",
+    "The only bad code is code you never wrote!",
+    "You don’t have to be great to start, but you have to start to be great!",
+    "Coding is an adventure, embrace the journey!",
+    "Think logically, break problems down, and tackle them one by one!",
+    "Every line of code is a step toward mastery!",
+    "Mistakes make you better, debugging is just learning in disguise!",
+    "A small project today can turn into something big tomorrow!",
+    "One function at a time, and soon you’ll have a masterpiece!",
+    "The best coders aren’t the smartest, they’re the most persistent!",
+    "Code today, innovate tomorrow!",
+    "If it were easy, everyone would do it, challenge yourself!",
+    "Struggling means you’re growing, push through!",
+    "Write, test, improve, just keep moving forward!",
+    "Coding isn’t about knowing everything, it’s about problem-solving!",
+    "You have the power to create, start now!",
+    "Small wins in coding lead to big achievements!",
+    "The hardest bug to solve is the one you never debugged, keep going!",
+    "You’re just one keystroke away from a breakthrough!",
+    "Programming isn’t just a skill; it’s a mindset!",
+    "Bugs are temporary, learning is forever!",
+    "Every error is a lesson in disguise, embrace them!",
+    "Your first draft doesn’t have to be perfect, just start!",
+    "Code like no one is watching, then refactor like everyone is!",
+    "The first step to success is starting, open that editor!",
+    "Logic, patience, and persistence make a great programmer!",
+    "Don’t wait for motivation, start coding and let momentum take over!",
+    "Coding is the language of the future, speak it fluently!",
+    "A single script can change the world, write yours today!",
+    "Your dream app won’t build itself, start coding!",
+    "Great things happen when you start typing!",
+    "Your code doesn’t have to be perfect, just better than yesterday’s!",
+    "Break problems into smaller parts, then conquer them!",
+    "The keyboard is your paintbrush, create something amazing!",
+    "Be fearless, every coder has failed before they succeeded!",
+    "Even the best programs started as a blank screen!",
+    "The more you challenge yourself, the faster you improve!",
+    "Success in coding is just problem-solving with persistence!",
+    "The best way to predict the future is to code it!",
+    "Every error you fix makes you a better developer!",
+    "Programming is like a puzzle, enjoy solving it!",
+    "You control the machine, it’s time to make it work for you!",
+    "Great developers aren’t born, they’re made through practice!",
+    "The more you practice, the luckier you get!",
+    "Every coder was once a beginner, just like you!",
+    "Take a deep breath, type a line of code, and see what happens!",
+    "Your code has the power to shape the world, use it wisely!",
+    "Coding isn’t magic, but it sure feels like it!",
+    "Every function you write is a step toward mastery!",
+    "Keep pushing forward, every line of code counts!",
+    "Your breakthrough moment is just one problem away!",
+    "Code now, debug later, improve always!",
+    "Programming is hard, but so is anything worth doing!",
+    "Write code like a poet writes verses, thoughtfully and passionately!",
+    "Think logically, build patiently, and watch your skills grow!",
+    "Just write something, refactoring comes later!",
+    "Your logic is your weapon, use it to solve problems!",
+    "Never let frustration stop you, let it fuel you instead!",
+    "Every master coder was once where you are now!",
+    "Coding is a marathon, not a sprint, pace yourself!",
+    "Start small, dream big, and code even bigger!",
+    "There’s no such thing as wasted effort, every attempt teaches you something!",
+    "One day, you'll look back and realize how far you've come!",
+    "The best time to start coding was yesterday. The second best time is now!",
+    "Your ideas deserve to be built, start coding today!",
+    "You are capable of more than you think, keep pushing forward!",
+    "Every bug you fix adds to your expertise!",
+    "Remember why you started coding, and let that fuel you!",
+    "Even if it's messy, just get it working, refine later!",
+    "Your persistence is the key to your coding success!",
+    "Great things happen when you don’t give up!",
+    "The hardest part is starting, so start now!",
+    "With every line of code, you’re improving!",
+    "Your brain is learning and adapting, trust the process!",
+    "The best way to get unstuck is to keep moving forward!",
+    "Write code like a scientist, experiment, observe, and improve!",
+    "You’re training your brain to think differently, keep at it!",
+    "The solution is just a few lines of code away, keep going!",
+    "Every problem has a solution, your job is to find it!",
+    "Your coding skills are growing stronger every day!",
+    "The best coders are the ones who never give up!",
+    "Be patient with yourself, greatness takes time!",
+    "You’re developing more than code, you’re developing yourself!",
+    "Believe in yourself, because coding is all about problem-solving!",
+    "Every day you code, you're getting closer to mastery!",
+    "Don’t be afraid to fail, be afraid of not trying!",
+    "Coding is a journey, not a destination, enjoy the ride!",
+    "Every great app started with someone just like you, keep coding!"
+]
+
 
 import os, json, random
 
@@ -259,6 +361,15 @@ config_path = str(Path.home() / ".config/project-manager/config.json")
 
 def ask(query: str) -> str :
 	return input(yellow(query)).strip()
+
+def asknum(query: str) -> int :
+	ins = ask(query + "(number) ")
+
+	if ins.isdecimal() :
+		return int(ins)
+
+	print("Please input a number")
+	return asknum(query)
 
 def askyesno(query: str) -> bool :
 	ins = ask(query + "(y/n) ").lower()
@@ -337,6 +448,12 @@ def setConfig(key: str, val: Any) :
 
 def getConfig(key: str, default: Any) :
 	return config[key] if key in config else default
+
+motivation_amount = getConfig("motivation-amount", 0)
+
+if motivation_amount == 0 :
+	motivation_amount = asknum("How many motivational lines to give? ")
+	setConfig("motivation-amount", motivation_amount)
 
 oncreate = getConfig("on-create", {})
 onload = getConfig("on-load", {})
@@ -707,7 +824,10 @@ def generateReadme(path: str) :
 	with open(path + "/README.md", "w") as f :
 		f.write(readme)
 
-def giveMotivation(lines: list[str], amount = 1) :
+def giveMotivation(lines: list[str], amount = -1) :
+	if amount < 0 :
+		amount = motivation_amount
+
 	seen = []
 	for i in range(amount) :
 		ln = random.choice([x for x in lines])
@@ -878,6 +998,8 @@ def openProject(path: str) :
 		setMetadata(path, "revision", meta["revision"] + 1)
 
 	showTodo(path)
+
+	giveMotivation(coding_motivation)
 
 	return projectMode(path)
 
