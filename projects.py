@@ -723,17 +723,18 @@ def gitCmd(path: str) :
 	if cmd == "link" :
 		link = ask(f"/project{path[len(str(Path.home())):]}/git/link | Repository https/ssh: ")
 
-		ret = os.system(f"cd {path} && git remote add origin {link} && git branch -M main && git add . && git commit -m \"First Commit\" && git push --set-upstream origin main")
+		meta = getMetadata(path)
+		meta["commits"].append({
+			"message": "First Commit",
+			"time": time.time()
+		})
+		setMetadata(path, "commits", meta["commits"])
 
-		if ret == 0 :
-			print("Linked github repo successfully!")
+		generateReadme(path)
 
-			meta = getMetadata(path)
-			meta["commits"].append({
-				"message": "First Commit",
-				"time": time.time()
-			})
-			setMetadata(path, "commits", meta["commits"])
+		os.system(f"cd {path} && git remote add origin {link} && git branch -M main && git add . && git commit -m \"First Commit\" && git push --set-upstream origin main")
+
+		print("Linked github repo successfully!")
 
 	elif cmd == "commit" :
 		msg = ask(f"/project{path[len(str(Path.home())):]}/git/commit | Commit message: ")
@@ -858,7 +859,9 @@ def projectMode(path: str) :
 		print("Availible commands: meta, open, exit, pack, run, git, todo")
 		cmd = autocomplete(f"/project{path[len(str(Path.home())):]} >>> ", ["meta", "open", "exit", "pack", "run", "git", "todo"]).strip()
 
-		if cmd == "exit": return
+		if cmd == "exit":
+			setConfig("last-opened", "")
+			return
 
 		ex = 0
 		while ex == 0 :
@@ -1218,9 +1221,233 @@ def templateMode() :
 			templates.pop(name)
 			setConfig("templates", templates)
 
+DOCS = [
+	{
+		"name": "exit",
+		"desc": "Closes the program",
+		"longdesc": "Closes the program"
+	},
+	{
+		"name": "langs",
+		"desc": "Manages language folders",
+		"longdesc": "Contains subcommands to manage language folders",
+		"sub": [
+			{
+				"name": "add",
+				"desc": "Adds language folders",
+				"longdesc": "When given directories it will add them to the language folders"
+			},
+			{
+				"name": "rm",
+				"desc": "Removes language folders",
+				"longdesc": "When given directories it will remove them from the language folders"
+			},
+			{
+				"name": "list",
+				"desc": "Lists all language folders",
+				"longdesc": "Lists all language folders"
+			}
+		]
+	},
+	{
+		"name": "project",
+		"desc": "Opens and manages projects",
+		"longdesc": "Opens a project and has tools to manage important parts of a project",
+		"sub": [
+			{
+				"name": "meta",
+				"desc": "Shows a project's metadata",
+				"longdesc": "Shows a project's metadata"
+			},
+			{
+				"name": "open",
+				"desc": "Opens the project",
+				"longdesc": "Opens the project with the user's preferred ide"
+			},
+			{
+				"name": "pack",
+				"desc": "Managed dependencies",
+				"longdesc": "Provides commands to install, remove and list dependencies",
+				"sub": [
+					{
+						"name": "add",
+						"desc": "Adds a dependency",
+						"longdesc": "Adds a dependency with the current project's default package manager"
+					},
+					{
+						"name": "rm",
+						"desc": "Removes a dependency",
+						"longdesc": "Removes a dependency with the current project's default package manager"
+					},
+					{
+						"name": "list",
+						"desc": "Lists all dependencies",
+						"longdesc": "Lists all dependencies with the current project's default package manager"
+					},
+					{
+						"name": "search",
+						"desc": "Searches for a library",
+						"longdesc": "Searches for a library with the current project's default package manager"
+					}
+				]
+			},
+			{
+				"name": "git",
+				"desc": "Provides commands to manage version control",
+				"longdesc": "Provides command to link and commit to a github repository",
+				"sub": [
+					{
+						"name": "link",
+						"desc": "Links a project with a github repo",
+						"longdesc": "Automatically link this project with the specified github repository"
+					},
+					{
+						"name": "commit",
+						"desc": "Commits to the linked githube repository",
+						"longdesc": "Adds all files, commits with the specified message and then pushes, also gives a motivational line"
+					},
+					{
+						"name": "pull",
+						"desc": "Pulls the linked repository",
+						"longdesc": "Pulls the linked repository"
+					},
+					{
+						"name": "generate",
+						"desc": "Generate README.md",
+						"longdesc": "Generates the README.md file based on the projects metadata"
+					}
+				]
+			},
+			{
+				"name": "todo",
+				"desc": "Manages a project's todos",
+				"longdesc": "Provides commands to add and mark todos",
+				"sub": [
+					{
+						"name": "add",
+						"desc": "Adds a todo",
+						"longdesc": "Adds a todo with the specified name, tags and points to award"
+					},
+					{
+						"name": "mark",
+						"desc": "Marks a todo as completed",
+						"longdesc": "Marks a todo as completed and awards the todo's points, also gives a motivational line"
+					},
+					{
+						"name": "show",
+						"desc": "Shows all todos",
+						"longdesc": "Shows all ot the project's todos as well as the amount of points earned"
+					}
+				]
+			},
+			{
+				"name": "run",
+				"desc": "Runs the project",
+				"longdesc": "Runs the project"
+			}
+		]
+	},
+	{
+		"name": "config",
+		"desc": "Shows the user's config file",
+		"longdesc": "Shows the user's config file and its location"
+	},
+	{
+		"name": "create",
+		"desc": "Creates a new project",
+		"longdesc": "Creates a project, if a templatee has been defined asks the user if they want to use one"
+	},
+	{
+		"name": "ideas",
+		"desc": "Lets the user write down ideas",
+		"longdesc": "Lets the user write down ideas",
+		"sub": [
+			{
+				"name": "show",
+				"desc": "Shows all project ideas",
+				"longdesc": "Shows all project ideas",
+			},
+			{
+				"name": "make",
+				"desc": "Adds a new idea",
+				"longdesc": "Prompts the user with an idea's label and then adds it"
+			},
+			{
+				"name": "rm",
+				"desc": "Removes a project idea",
+				"longdesc": "Removes a project idea"
+			}
+		]
+	},
+	{
+		"name": "templ",
+		"desc": "Manages project templates",
+		"longdesc": "Adds and removes project templates",
+		"sub": [
+			{
+				"name": "add",
+				"desc": "Creates a project template",
+				"longdesc": "Creates a project template",
+			},
+			{
+				"name": "rm",
+				"desc": "Removes a project template",
+				"longdesc": "Removes a project template",
+			},
+			{
+				"name": "show",
+				"desc": "Lists all project templates",
+				"longdesc": "Lists all project templates",
+			}
+		]
+	},
+	{
+		"name": "help",
+		"desc": "Show help messages",
+		"longdesc": "Shows help messages for every command"
+	}
+]
+
+def showInfo(pos: str, info: dict) :
+	print((pos + " > " if pos != "" else "") + bold(info["name"]))
+	print("", info["longdesc"])
+
+	if "sub" in info :
+		print()
+		print("Possible subcommands:")
+		longest = max(len(x["name"]) for x in info["sub"])
+		for i in info["sub"] :
+			print("", f"{i["name"]:<{longest}}", "", i["desc"])
+
+		p = [""]
+		p.extend(x["name"] for x in info["sub"])
+
+		sub = autocomplete(f"/help/{info["name"]} | Subcommand to provide help on: ", p)
+
+		subcommand = {}
+		for i in info["sub"] :
+			if i["name"] == sub :
+				subcommand = i
+
+		showInfo((pos + " > " if pos != "" else "") + info["name"], subcommand)
+
+def helpMode() :
+	longest = max(len(x["name"]) for x in DOCS)
+	for i in DOCS :
+		print("", f"{i["name"]:<{longest}}", "", i["desc"])
+
+	sec = autocomplete(f"/help | Section to provide info on: ", [x["name"] for x in DOCS])
+
+	info = {}
+	for i in DOCS :
+		if i["name"] == sec :
+			info = i
+
+	showInfo("", info)
+
 def interactiveMode() :
-	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas, templ")
-	mode = autocomplete("/ >>> ", ["exit", "langs", "project", "config", "create", "ideas", "templ"])
+	print("(exit to close) Select a mode, possible modes: langs, project, config, create, ideas, templ, help")
+	mode = autocomplete("/ >>> ", ["exit", "langs", "project", "config", "create", "ideas", "templ", "help"])
 
 	if mode == "exit": exit()
 
@@ -1237,6 +1464,8 @@ def interactiveMode() :
 		func = ideaMode
 	elif mode == "templ" :
 		func = templateMode
+	elif mode == "help" :
+		func = helpMode
 
 	if func :
 		func()
