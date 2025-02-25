@@ -1108,23 +1108,27 @@ def memoryGame() :
 		else :
 			found.append(grid[d1[1]][d1[0]])
 
-		input("Continue                          ")
+		print("                            ", end = "\r")
+		input("Continue")
 
 	drawGrid()
 	print(bold(green("You win!")))
 
-def getGuess(query: str) -> list[str] :
+def getGuess(query: str, symbols: list[str]) -> list[str] :
 	guess = input(query)
 
 	if len(guess) != 5 :
-		return getGuess("Use 5 symbols for a pattern: ")
+		return getGuess("\033[FUse 5 symbols for a pattern: ", symbols)
+
+	if any(not x in symbols for x in guess) :
+		return getGuess("\033[FUse valid symbols: ", symbols)
 
 	return list(guess)
 
 def masterGame() :
 	print("Welcome to mastermind!")
 
-	symbols = list("abcde")
+	symbols = list("abcdefgh")
 
 	pattern = [random.choice(symbols) for x in range(5)]
 
@@ -1134,10 +1138,10 @@ def masterGame() :
 	print(yellow(" Yellow: symbol is in the pattern but not in this spot"))
 	print(green(" Green: symbol is in the pattern and in this spot"))
 
-	for g in range(10) :
-		guess = getGuess(f"Guess a pattern ({g+1}/10): ")
+	for g in range(5) :
+		guess = getGuess(f"Guess a pattern ({g+1}/5): ", symbols)
 
-		print("\033[F                             ", end = "\r")
+		print("\033[F                                                                ", end = "\r")
 
 		cols = []
 
@@ -1156,7 +1160,7 @@ def masterGame() :
 			break
 
 	if all(guess[x] == pattern[x] for x in range(5)) :
-		print(yellow(bold("You win!")))
+		print(green(bold("You win!")))
 
 def gameCmd(path: str) :
 	games = [memoryGame, masterGame]
