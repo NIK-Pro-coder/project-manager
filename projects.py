@@ -421,6 +421,7 @@ back_to_coding_motivation = [
 
 
 
+from posixpath import pardir
 import os, json, random
 
 from pathlib import Path
@@ -924,7 +925,7 @@ def giveMotivation(lines: list[str], amount = -1) :
 	for i in range(amount) :
 		ln = random.choice([x for x in lines])
 		seen.append(ln)
-		ret = os.system(f"cowsay {ln}")
+		ret = os.system(f"cowsay \"{ln}\"")
 
 		if ret != 0 :
 			print("\033[F" + bold(green(ln)))
@@ -969,7 +970,7 @@ def gitCmd(path: str) :
 			print(yellow(f"/project{path[len(str(Path.home())):]}/git/commit | Generating README.md"))
 			generateReadme(path)
 
-			input(f"/project{path[len(str(Path.home())):]}/git/commit | If you'd like to edit the generated README.md do it now (ENTER to continue)")
+			input(yellow(f"/project{path[len(str(Path.home())):]}/git/commit | If you'd like to edit the generated README.md do it now (ENTER to continue)"))
 
 		ret = os.system(f"cd {path} && git add . && git commit -m \"{msg}\" && git push")
 
@@ -1112,8 +1113,53 @@ def memoryGame() :
 	drawGrid()
 	print(bold(green("You win!")))
 
+def getGuess(query: str) -> list[str] :
+	guess = input(query)
+
+	if len(guess) != 5 :
+		return getGuess("Use 5 symbols for a pattern: ")
+
+	return list(guess)
+
+def masterGame() :
+	print("Welcome to mastermind!")
+
+	symbols = list("abcde")
+
+	pattern = [random.choice(symbols) for x in range(5)]
+
+	print("Symbols:", *symbols)
+	print("Legend:")
+	print(" White: symbol is not in the pattern")
+	print(yellow(" Yellow: symbol is in the pattern but not in this spot"))
+	print(green(" Green: symbol is in the pattern and in this spot"))
+
+	for g in range(10) :
+		guess = getGuess(f"Guess a pattern ({g+1}/10): ")
+
+		print("\033[F                             ", end = "\r")
+
+		cols = []
+
+		for i in range(5) :
+			if guess[i] == pattern[i] :
+				cols.append(green)
+			elif guess[i] in pattern :
+				cols.append(yellow)
+			else :
+				cols.append(str)
+
+		for n,i in enumerate(guess) :
+			print(" " + cols[n](i), end = "")
+		print()
+		if all(guess[x] == pattern[x] for x in range(5)) :
+			break
+
+	if all(guess[x] == pattern[x] for x in range(5)) :
+		print(yellow(bold("You win!")))
+
 def gameCmd(path: str) :
-	games = [memoryGame]
+	games = [memoryGame, masterGame]
 
 	game = random.choice(games)
 

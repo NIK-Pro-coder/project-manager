@@ -12,6 +12,7 @@ Todos:
 ---
 
 Latest commits:
+ - `2025/02/25 20:27:18` "Added mastermind game"
  - `2025/02/25 19:02:14` "Added game command + memory game"
  - `2025/02/25 18:15:46` "Added motivational lines for opening projects"
  - `2025/02/25 07:37:16` "Added help command"
