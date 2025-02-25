@@ -309,6 +309,116 @@ coding_motivation = [
     "Coding is a journey, not a destination, enjoy the ride!",
     "Every great app started with someone just like you, keep coding!"
 ]
+back_to_coding_motivation = [
+    "Welcome back! Time to turn ideas into reality!",
+    "Your code is waiting for you, let’s get back to it!",
+    "Refreshed and ready? Time to dive back in!",
+    "Breaks are great, but progress is even better, let’s go!",
+    "The best way to restart is to start, open that editor!",
+    "Your future self will thank you for coding today!",
+    "You’ve recharged, now it’s time to build something amazing!",
+    "One keystroke at a time, let’s get back into the flow!",
+    "Progress happens one line at a time, let’s add another!",
+    "Every great coder knows when to rest and when to get back to work!",
+    "Your best work is still ahead of you, start coding!",
+    "A fresh mind means fresh ideas, let’s write some code!",
+    "Take that first step, momentum will follow!",
+    "Coding is like a muscle, the more you use it, the stronger you get!",
+    "The keyboard is your playground, time to have some fun!",
+    "Your code is calling, let’s pick up where we left off!",
+    "You’ve had your break, now let’s make some breakthroughs!",
+    "Great ideas don’t code themselves, let’s make it happen!",
+    "You don’t have to be perfect, just present, start coding!",
+    "Every small step forward adds up, let’s take another!",
+    "Remember why you started, now let’s finish strong!",
+    "You know what to do, just start typing!",
+    "Relaxation fuels creativity, bring those fresh ideas to life!",
+    "Coding is waiting, and so is your next big success!",
+    "There’s no better time to start than right now!",
+    "Your project just got a boost, your refreshed mind!",
+    "Break time’s over, now it’s time to make magic happen!",
+    "Let’s get back into the groove, your code needs you!",
+    "The first step is always the hardest, so let’s take it now!",
+    "Your skills didn’t disappear, jump back in with confidence!",
+    "No rush, no pressure, just one line at a time!",
+    "You’re capable, you’re prepared, and you’re ready, let’s go!",
+    "Breaks make you better, now show what you’ve got!",
+    "Even a few lines of code today bring you closer to mastery!",
+    "A fresh start can lead to incredible things, start coding!",
+    "Your next big breakthrough could be just one function away!",
+    "The hardest part is over, you’ve already started before!",
+    "Coding isn’t about perfection; it’s about persistence!",
+    "You’ve got this! Now get back in there and build something great!",
+    "The best projects come from consistent effort, keep going!",
+    "Take a deep breath and start with just one small task!",
+    "Let’s turn post-break energy into post-break progress!",
+    "The world needs your ideas, get back to coding!",
+    "Refreshed minds write better code, prove it!",
+    "You’re in control of what happens next, start typing!",
+    "You are just one step away from getting back in the zone!",
+    "A short break doesn’t erase your skills, let’s go!",
+    "Your program didn’t quit on you, don’t quit on it!",
+    "The best way to get into the flow is to start moving!",
+    "The greatest coders take breaks, but they always come back!",
+    "Write one line, then another, before you know it, you’re back!",
+    "Small progress is better than no progress, just begin!",
+    "Your future success depends on today’s effort, let’s go!",
+    "Relaxation is part of the process, now let’s continue coding!",
+    "Welcome back! Time to turn caffeine and logic into progress!",
+    "You’re never really starting over, just picking up where you left off!",
+    "Your ideas are still there, waiting to be built!",
+    "Even the best programmers need a restart, this is yours!",
+    "Think of this as a fresh start, not a setback!",
+    "The best way to regain momentum is to take action!",
+    "You don’t have to get it perfect, just get it going!",
+    "There’s no such thing as ‘too late’, just start now!",
+    "You were making progress before, you can do it again!",
+    "You’ve rested, now it’s time to make things happen!",
+    "One small step today means big results tomorrow!",
+    "Your code isn’t going to write itself, time to take charge!",
+    "Every time you return, you come back stronger!",
+    "The first line you write now is a step toward something great!",
+    "Breathe in, focus, and get back to work!",
+    "Think of this as a new challenge, conquer it!",
+    "Momentum starts with one action, start typing!",
+    "You’ve already done the hard part, getting started before!",
+    "Coding is like riding a bike, you never forget how!",
+    "The only way forward is through, let’s start coding!",
+    "No need for perfection, just progress!",
+    "The best projects come from those who keep going!",
+    "You’re in control of your progress, take that first step!",
+    "Your code is still waiting for you, time to continue the journey!",
+    "You’re a coder, this is what you do best!",
+    "Think of where you’ll be if you just start right now!",
+    "Your best work is ahead of you, so let’s get started!",
+    "Start small, dream big, and make it happen!",
+    "Coding is an adventure, let’s continue the journey!",
+    "If you write one line of code now, the next one will be easier!",
+    "Remember how great it feels to solve a problem, let’s do it again!",
+    "Refreshed and recharged? Now let’s refactor and rebuild!",
+    "Breaks give you clarity, use that to your advantage!",
+    "Every restart is a chance to improve!",
+    "Your coding skills didn’t fade, they’re just waiting for you!",
+    "Jump back in and prove to yourself that you’re unstoppable!",
+    "No pressure, no stress, just type and see where it takes you!",
+    "The next great feature in your project starts with you!",
+    "Every champion coder knows the value of a comeback!",
+    "What you do now sets up your future success, let’s go!",
+    "Your best work isn’t behind you, it’s ahead of you!",
+    "Today’s code is tomorrow’s success, start typing!",
+    "You control your pace, just take one step forward!",
+    "Take the break, but never stop moving forward!",
+    "One small commit today leads to big wins tomorrow!",
+    "Your skills are sharp, time to put them to work!",
+    "Break time is over, now it’s build time!",
+    "You were doing great before, you can do it again!",
+    "You’ve done this before, and you can do it again!",
+    "Time to turn that refreshed mind into fresh new code!",
+    "You’re just one session away from another breakthrough!",
+    "Your best coding session could be just ahead, start now!",
+    "Step into the flow, one keystroke at a time!"
+]
+
 
 
 import os, json, random
@@ -429,7 +539,6 @@ except FileNotFoundError :
 			"langs": [],
 			"rm-misplaced": None,
 			"packages": {},
-			"editor": "",
 			"ideas": [],
 			"create-backup": None,
 			"templates": {}
@@ -459,14 +568,12 @@ oncreate = getConfig("on-create", {})
 onload = getConfig("on-load", {})
 
 templates: dict = getConfig("templates", {})
-editor = getConfig("editor", "")
 ideas = getConfig("ideas", [])
 
 langs = getConfig("langs", [])
 
 if not langs :
 	toadd = []
-	print("You can change language folders later but it requires a restart to get configured properly")
 	select = askyesno("There are no language files in the config, would you like to autoselect them? ")
 	homedirs = [str(Path.home() / x) for x in os.listdir(Path.home()) if os.path.isdir(Path.home() / x) and x[0] != "."]
 
@@ -656,7 +763,6 @@ if rm :
 	for i in misplaced :
 		os.remove(i)
 
-
 if no_project_file :
 	print("These files don't have a project file:")
 	for i in no_project_file :
@@ -713,21 +819,6 @@ def setMetadata(path: str, key: str, value: Any) :
 
 def metaCmd(path: str) :
 	showMetadata(path)
-
-	return 1
-
-def openCmd(path: str) -> int :
-
-	if editor == "" :
-		print("Looks like you haven't configured an editor")
-		ide = ask("Command to open the project: (use $x for project dir) ")
-
-		setConfig("editor", ide)
-
-	print("Opening project")
-	ide = getConfig("editor", "")
-
-	os.popen(f"{ide.replace("$x", path)} &")
 
 	return 1
 
@@ -807,12 +898,13 @@ def generateReadme(path: str) :
 	readme = f"## {meta["name"]}\n"
 	readme += meta["desc"] + "\n"
 
-	readme += "\n---\n\n"
+	if len(meta["todos"]) > 0 :
+		readme += "\n---\n\n"
 
-	readme += "Todos:\n"
-	meta["todos"].sort(key = lambda x: -x["points"])
-	for i in meta["todos"] :
-		readme += f" - [{"x" if i["completed"] else " "}] {i["label"]} {" ".join(f"`{x}`" for x in i["tags"])}\n"
+		readme += "Todos:\n"
+		meta["todos"].sort(key = lambda x: -x["points"])
+		for i in meta["todos"] :
+			readme += f" - [{"x" if i["completed"] else " "}] {i["label"]} {" ".join(f"`{x}`" for x in i["tags"])}\n"
 
 	readme += "\n---\n\n"
 
@@ -832,7 +924,10 @@ def giveMotivation(lines: list[str], amount = -1) :
 	for i in range(amount) :
 		ln = random.choice([x for x in lines])
 		seen.append(ln)
-		print(bold(green(ln)))
+		ret = os.system(f"cowsay {ln}")
+
+		if ret != 0 :
+			print("\033[F" + bold(green(ln)))
 
 def gitCmd(path: str) :
 	print("Possible subommands: link, commit, pull, exit, generate")
@@ -947,6 +1042,87 @@ def todoCmd(path: str) :
 
 	return 0
 
+def getSpot(discovered: list[tuple[int, int]], query: str = "Pick a spot (eg. a1) ") -> tuple[int, int] :
+	print("                          ", end = "\r")
+	sp = input(query)
+	if len(sp) > 2 or not sp[1].isdecimal() or sp[1] > "4" or not sp[0] in "abcd" :
+		return getSpot(discovered, "\033[FPlease pick a valid spot! ")
+
+	test = (
+		ord(sp[0]) - 97, int(sp[1]) - 1
+	)
+
+	if test in discovered :
+		return getSpot(discovered, "\033[FPick a non-opened spot ")
+
+	return test
+
+def memoryGame() :
+	print("Welcome to memory game!")
+
+	symbols = list("+*|cv-/~")
+
+	grid = [
+		["" for x in range(4)] for i in range(4)
+	]
+	possible = []
+	for x in range(4) :
+		possible.extend([(x, y) for y in range(4)])
+
+	for i in symbols :
+		pos1 = possible.pop(random.randrange(0, len(possible)))
+		pos2 = possible.pop(random.randrange(0, len(possible)))
+
+		grid[pos1[1]][pos1[0]] = i
+		grid[pos2[1]][pos2[0]] = i
+
+	discover = []
+	found = []
+
+	def drawGrid() :
+		print("\033[F\033[F\033[F\033[F\033[F\033[F", end = "\r")
+		print("  a b c d")
+		for n, i in enumerate(grid) :
+			print(n+1, *[(green(x) if x in found else x) if (j, n) in discover else "?" for j,x in enumerate(i)])
+
+	for i in range(6) :
+		print()
+
+	while len(discover) < 16 :
+		drawGrid()
+
+		sp = getSpot(discover)
+		discover.append(sp)
+		drawGrid()
+
+		sp = getSpot(discover)
+		discover.append(sp)
+		drawGrid()
+
+		d1, d2 = discover[-1], discover[-2]
+
+		if grid[d1[1]][d1[0]] != grid[d2[1]][d2[0]] :
+			discover.pop(-1)
+			discover.pop(-1)
+		else :
+			found.append(grid[d1[1]][d1[0]])
+
+		input("Continue                          ")
+
+	drawGrid()
+	print(bold(green("You win!")))
+
+def gameCmd(path: str) :
+	games = [memoryGame]
+
+	game = random.choice(games)
+
+	game()
+
+	giveMotivation(back_to_coding_motivation)
+
+	return 1
+
 def projectMode(path: str) :
 
 	lang = path[:path.rfind("/")]
@@ -968,16 +1144,16 @@ def projectMode(path: str) :
 
 	cmds = {
 		"meta": metaCmd,
-		"open": openCmd,
 		"pack": packCmd,
 		"run": runCmd,
 		"git": gitCmd,
-		"todo": todoCmd
+		"todo": todoCmd,
+		"game": gameCmd
 	}
 
 	while True :
-		print("Availible commands: meta, open, exit, pack, run, git, todo")
-		cmd = autocomplete(f"/project{path[len(str(Path.home())):]} >>> ", ["meta", "open", "exit", "pack", "run", "git", "todo"]).strip()
+		print("Availible commands: meta, open, exit, pack, run, git, todo, game")
+		cmd = autocomplete(f"/project{path[len(str(Path.home())):]} >>> ", ["meta", "open", "exit", "pack", "run", "git", "todo", "game"]).strip()
 
 		if cmd == "exit":
 			setConfig("last-opened", "")
@@ -1382,11 +1558,6 @@ DOCS = [
 				"longdesc": "Shows a project's metadata"
 			},
 			{
-				"name": "open",
-				"desc": "Opens the project",
-				"longdesc": "Opens the project with the user's preferred ide"
-			},
-			{
 				"name": "pack",
 				"desc": "Managed dependencies",
 				"longdesc": "Provides commands to install, remove and list dependencies",
@@ -1466,6 +1637,11 @@ DOCS = [
 				"name": "run",
 				"desc": "Runs the project",
 				"longdesc": "Runs the project"
+			},
+			{
+				"name": "game",
+				"desc": "Plays a random minigame",
+				"longdesc": "Lets the user relax for a bit by playing a little game"
 			}
 		]
 	},
