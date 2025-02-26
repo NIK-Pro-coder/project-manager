@@ -630,7 +630,6 @@ for i in langs :
 		extensions[l] = ex
 		setConfig("extensions", extensions)
 
-rm_misplaced: bool | None = getConfig("rm-misplaced", None)
 misplaced: list[str] = []
 no_project_file: list[str] = []
 
@@ -713,9 +712,7 @@ print("Checking project files")
 for i in langs :
 	for f in os.listdir(i) :
 		path: str = i + "/" + f
-		if os.path.isfile(path) :
-			misplaced.append(path)
-		else :
+		if os.path.isdir(path) :
 			if projects_in_folder :
 				if not os.path.isfile(Path.home() / (".config/project-manager/projects" + path + ".json")) :
 					if not "backup" in f or not create_backup :
@@ -748,19 +745,6 @@ for i in langs :
 
 					with open(path + "/project.json", "w") as f :
 						json.dump(proj, f)
-
-if rm_misplaced == None :
-	print("These files seem to be misplaced:")
-	for i in misplaced :
-		print(" -", i)
-	rm = askyesno("Do you want to remove them? ")
-else :
-	rm = rm_misplaced
-
-setConfig("rm-misplaced", rm)
-if rm :
-	for i in misplaced :
-		os.remove(i)
 
 if no_project_file :
 	print("These files don't have a project file:")
