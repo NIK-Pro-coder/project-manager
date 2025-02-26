@@ -1,6 +1,17 @@
 ## PyProjectManager
 A little python script that helps manage projects and ideas
 
+#### Description:
+PyProjectManager is a simple and easy to use project managing software that aims to abstract boring thing like doing commits and installing packages away from the developer.
+
+It offers a variety of tools to aid in the development of software, for example it provides a simple and efficent way to manage todos.
+
+It also has a few silly little features like motivational quotes displayed using cowsay (if it is installed) and a few minigames, such as:
+ - 2048
+ - Mastermind
+ - Memory
+ - That's it really
+
 ---
 
 Todos:
@@ -12,6 +23,7 @@ Todos:
 ---
 
 Latest commits:
+ - `2025/02/26 16:29:41` "Added suppport for long descriptions in README.md"
  - `2025/02/26 13:22:24` "Added 2048 game & fixed some issues"
  - `2025/02/25 20:39:39` "Balanced mastermind game"
  - `2025/02/25 20:27:18` "Added mastermind game"
