@@ -419,8 +419,6 @@ back_to_coding_motivation = [
     "Step into the flow, one keystroke at a time!"
 ]
 
-
-
 from posixpath import pardir
 import os, json, random
 
@@ -1467,7 +1465,10 @@ def createModeNoTempl() :
 			print(f"'{lang}' is not a registered language folder, please register it as such before continuing")
 			return -1
 
-		name = ask("/create | Project name: ").strip()
+		name = ""
+		while name == "" :
+			name = ask("/create | Project name: ").strip()
+			if name == "" : print("Enter a name")
 		name_esc = escapeText(name)
 		print(f"Escaped name: {name_esc}")
 
@@ -1528,7 +1529,10 @@ def createModeTempl() :
 
 		templ = templates[tm]
 
-		name = ask("/create | Project name: ").strip()
+		name = ""
+		while name == "" :
+			name = ask("/create | Project name: ").strip()
+			if name == "" : print("Enter a name")
 		name_esc = escapeText(name)
 		print(f"/create | Escaped name: {name_esc}")
 

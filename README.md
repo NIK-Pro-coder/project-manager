@@ -23,6 +23,7 @@ Todos:
 ---
 
 Latest commits:
+ - `2025/02/26 19:19:52` "Made project name mandatory"
  - `2025/02/26 16:29:41` "Added suppport for long descriptions in README.md"
  - `2025/02/26 13:22:24` "Added 2048 game & fixed some issues"
  - `2025/02/25 20:39:39` "Balanced mastermind game"
