@@ -511,6 +511,9 @@ def autocomplete(query: str, possiblilities: list[str]) -> str :
 	fil: list[str] = [x for x in possiblilities if x.startswith(got)]
 	fil = list(set(fil))
 
+	if got in fil :
+		fil = [got]
+
 	if len(fil) == 1 :
 		print(f"\033[F{yellow(query)}{fil[0]}")
 		return fil[0]
@@ -652,7 +655,7 @@ if create_backup == None :
 
 projects_in_folder: bool | None = getConfig("projects-in-folder", None)
 if projects_in_folder == None :
-	projects_in_folder = askyesno("Would you like to move project files all to a signle folder? ")
+	projects_in_folder = askyesno("Would you like to move project files all to a single folder? ")
 
 	setConfig("projects-in-folder", projects_in_folder)
 
@@ -759,7 +762,9 @@ if no_project_file :
 
 			print(printJsonPritty(meta))
 			if projects_in_folder :
-				with open(Path.home() / ".config/project-manager/projects" / (i + ".json"), "w") as f :
+				print(i)
+				print(Path.home() / ".config/project-manager/projects" / (i + ".json"))
+				with open(str(Path.home() / ".config/project-manager/projects") + "/" + (i + ".json"), "w") as f :
 					json.dump(meta, f)
 			else :
 				with open(i + "/project.json", "w") as f :

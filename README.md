@@ -23,6 +23,7 @@ Todos:
 ---
 
 Latest commits:
+ - `2025/02/26 20:17:30` "Fixed an issue where project files would be created in the wrong dir"
  - `2025/02/26 19:40:23` "Removed option to remove misplaced files because it was annoying"
  - `2025/02/26 19:19:52` "Made project name mandatory"
  - `2025/02/26 16:29:41` "Added suppport for long descriptions in README.md"
