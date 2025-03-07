@@ -430,6 +430,7 @@ def green(text: str) -> str : return f"\033[92m{text}\033[00m"
 def aquamarine(text: str) -> str : return f"\033[96m'{text}'\033[00m"
 def blue(text: str) -> str : return f"\033[94m'{text}'\033[00m"
 def yellow(text: str) -> str : return f"\033[93m{text}\033[00m"
+def red(text: str) -> str : return f"\033[91m{text}\033[00m"
 
 def bold(text: str) -> str : return f"\033[1m{text}\033[00m"
 
@@ -1287,10 +1288,156 @@ def game2048() :
 		merge(dir)
 		compress(dir)
 
-def gameCmd(path: str) :
-	games = [game2048, memoryGame, masterGame]
+languages = {
+	"Python": {
+		"compiled": False,
+		"typesafe": False,
+		"created-in": 1991,
+		"keywords": 36,
+	},
+	"JavaScript": {
+		"compiled": False,
+		"typesafe": False,
+		"created-in": 1995,
+		"keywords": 63,
+	},
+	"Java": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 1995,
+		"keywords": 68,
+	},
+	"C++": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 1979,
+		"keywords": 63,
+	},
+	"C#": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 1971,
+		"keywords": 104,
+	},
+	"Go": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 2009,
+		"keywords": 25,
+	},
+	"Rust": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 2006,
+		"keywords": 53,
+	},
+	"Swift": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 2014,
+		"keywords": 232,
+	},
+	"Kotlin": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 2010,
+		"keywords": 29,
+	},
+	"PHP": {
+		"compiled": False,
+		"typesafe": False,
+		"created-in": 1994,
+		"keywords": 53,
+	},
+	"TypeScript": {
+		"compiled": False,
+		"typesafe": True,
+		"created-in": 2012,
+		"keywords": 63,
+	},
+	"Ruby": {
+		"compiled": False,
+		"typesafe": True,
+		"created-in": 1993,
+		"keywords": 41,
+	},
+	"Dart": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 2011,
+		"keywords": 61,
+	},
+	"R": {
+		"compiled": False,
+		"typesafe": False,
+		"created-in": 1991,
+		"keywords": 21,
+	},
+	"Lua": {
+		"compiled": False,
+		"typesafe": False,
+		"created-in": 1993,
+		"keywords": 22,
+	},
+	"Haskell": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 1990,
+		"keywords": 35,
+	},
+	"C": {
+		"compiled": True,
+		"typesafe": True,
+		"created-in": 1972,
+		"keywords": 32,
+	}
+}
 
-	game = random.choice(games)
+def languageGame():
+	name = random.choice(list(languages.keys()))
+	lang = languages[name]
+
+	for i in range(6) :
+		print(f"{6-i} guesses left")
+		ins = autocomplete("What is your guess ", list(languages.keys()))
+		prop=[
+			"Compiled ",
+			"Type Safe",
+			"Year     ",
+			"Keywords "
+		]
+		print(ins)
+		i=0
+		for k in languages[ins] :
+			fn = green if languages[ins][k] == lang[k] else red
+			if type(languages[ins][k]) is bool :
+				t=fn("Yes" if languages[ins][k] else "No")
+			elif type(languages[ins][k]) is int :
+				t=fn(("< " if languages[ins][k]>lang[k] else "> " if languages[ins][k]<lang[k] else "") + str(languages[ins][k]))
+			print(prop[i], "|", t)
+			i=i+1
+		if ins == name :
+			print(green("You guessed correctly!"))
+			return
+
+	print(f"The language was: {name}")
+
+def gameCmd(path: str) :
+	games = {
+		"2048": game2048,
+		"memory": memoryGame,
+		"mastermind": masterGame,
+		"laguagedle": languageGame,
+		"": "hi"
+	}
+
+	g = autocomplete("What game would you like to play? (blank for random)", list(games.keys()))
+
+	if g == "" :
+		games = [languageGame, game2048, memoryGame, masterGame]
+		game = random.choice(games)
+	else :
+		game = games[g]
 
 	game()
 
