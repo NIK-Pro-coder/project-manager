@@ -1289,122 +1289,67 @@ def game2048() :
 		compress(dir)
 
 languages = {
-	"Python": {
-		"compiled": False,
-		"typesafe": False,
-		"created-in": 1991,
-		"keywords": 36,
-	},
-	"JavaScript": {
-		"compiled": False,
-		"typesafe": False,
-		"created-in": 1995,
-		"keywords": 63,
-	},
-	"Java": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 1995,
-		"keywords": 68,
-	},
-	"C++": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 1979,
-		"keywords": 63,
-	},
-	"C#": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 1971,
-		"keywords": 104,
-	},
-	"Go": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 2009,
-		"keywords": 25,
-	},
-	"Rust": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 2006,
-		"keywords": 53,
-	},
-	"Swift": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 2014,
-		"keywords": 232,
-	},
-	"Kotlin": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 2010,
-		"keywords": 29,
-	},
-	"PHP": {
-		"compiled": False,
-		"typesafe": False,
-		"created-in": 1994,
-		"keywords": 53,
-	},
-	"TypeScript": {
-		"compiled": False,
-		"typesafe": True,
-		"created-in": 2012,
-		"keywords": 63,
-	},
-	"Ruby": {
-		"compiled": False,
-		"typesafe": True,
-		"created-in": 1993,
-		"keywords": 41,
-	},
-	"Dart": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 2011,
-		"keywords": 61,
-	},
-	"R": {
-		"compiled": False,
-		"typesafe": False,
-		"created-in": 1991,
-		"keywords": 21,
-	},
-	"Lua": {
-		"compiled": False,
-		"typesafe": False,
-		"created-in": 1993,
-		"keywords": 22,
-	},
-	"Haskell": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 1990,
-		"keywords": 35,
-	},
-	"C": {
-		"compiled": True,
-		"typesafe": True,
-		"created-in": 1972,
-		"keywords": 32,
-	}
+    "Python": {"year": 1991, "keywords": 35, "compiled": False, "typesafe": False},
+    "JavaScript": {"year": 1995, "keywords": 49, "compiled": False, "typesafe": False},
+    "Java": {"year": 1995, "keywords": 50, "compiled": True, "typesafe": True},
+    "C++": {"year": 1985, "keywords": 97, "compiled": True, "typesafe": True},
+    "C#": {"year": 2000, "keywords": 79, "compiled": True, "typesafe": True},
+    "Go": {"year": 2009, "keywords": 25, "compiled": True, "typesafe": True},
+    "Rust": {"year": 2010, "keywords": 38, "compiled": True, "typesafe": True},
+    "Swift": {"year": 2014, "keywords": 66, "compiled": True, "typesafe": True},
+    "Kotlin": {"year": 2011, "keywords": 73, "compiled": True, "typesafe": True},
+    "PHP": {"year": 1995, "keywords": 60, "compiled": False, "typesafe": False},
+    "TypeScript": {"year": 2012, "keywords": 64, "compiled": False, "typesafe": True},
+    "Ruby": {"year": 1995, "keywords": 44, "compiled": False, "typesafe": False},
+    "Dart": {"year": 2011, "keywords": 63, "compiled": True, "typesafe": True},
+    "R": {"year": 1993, "keywords": 50, "compiled": False, "typesafe": False},
+    "Perl": {"year": 1987, "keywords": 57, "compiled": False, "typesafe": False},
+    "Scala": {"year": 2004, "keywords": 45, "compiled": True, "typesafe": True},
+    "Lua": {"year": 1993, "keywords": 21, "compiled": False, "typesafe": False},
+    "Haskell": {"year": 1990, "keywords": 25, "compiled": True, "typesafe": True},
+    "C": {"year": 1972, "keywords": 32, "compiled": True, "typesafe": False},
+    "Julia": {"year": 2012, "keywords": 26, "compiled": True, "typesafe": True},
+    "Objective-C": {"year": 1984, "keywords": 36, "compiled": True, "typesafe": False},
+    "F#": {"year": 2005, "keywords": 30, "compiled": True, "typesafe": True},
+    "Elixir": {"year": 2011, "keywords": 32, "compiled": False, "typesafe": False},
+    "Erlang": {"year": 1986, "keywords": 40, "compiled": True, "typesafe": True},
+    "Cobol": {"year": 1959, "keywords": 60, "compiled": True, "typesafe": True},
+    "Fortran": {"year": 1957, "keywords": 40, "compiled": True, "typesafe": True},
+    "Bash": {"year": 1989, "keywords": 25, "compiled": False, "typesafe": False},
+    "Lisp": {"year": 1958, "keywords": 30, "compiled": False, "typesafe": True},
+    "Prolog": {"year": 1972, "keywords": 20, "compiled": False, "typesafe": False},
+    "Scheme": {"year": 1975, "keywords": 27, "compiled": False, "typesafe": True},
+    "Ada": {"year": 1980, "keywords": 69, "compiled": True, "typesafe": True},
+    "Racket": {"year": 1995, "keywords": 35, "compiled": False, "typesafe": True},
+    "OCaml": {"year": 1996, "keywords": 50, "compiled": True, "typesafe": True},
+    "Smalltalk": {"year": 1972, "keywords": 30, "compiled": False, "typesafe": False},
+    "ML": {"year": 1973, "keywords": 40, "compiled": True, "typesafe": True},
+    "Modula-2": {"year": 1978, "keywords": 55, "compiled": True, "typesafe": True},
+    "Crystal": {"year": 2014, "keywords": 40, "compiled": True, "typesafe": True},
+    "VHDL": {"year": 1980, "keywords": 75, "compiled": True, "typesafe": True},
+    "Verilog": {"year": 1984, "keywords": 60, "compiled": True, "typesafe": True},
+    "APL": {"year": 1964, "keywords": 30, "compiled": False, "typesafe": False},
+    "J": {"year": 1990, "keywords": 25, "compiled": False, "typesafe": False},
+    "Forth": {"year": 1970, "keywords": 20, "compiled": True, "typesafe": False},
+    "REXX": {"year": 1979, "keywords": 35, "compiled": False, "typesafe": False},
+    "PL/SQL": {"year": 1977, "keywords": 50, "compiled": True, "typesafe": True},
+    "PostScript": {"year": 1982, "keywords": 45, "compiled": True, "typesafe": False},
+    "Scratch": {"year": 2007, "keywords": 15, "compiled": False, "typesafe": False},
+    "Logo": {"year": 1967, "keywords": 25, "compiled": False, "typesafe": False}
 }
+
 
 def languageGame():
 	name = random.choice(list(languages.keys()))
 	lang = languages[name]
 
-	for i in range(6) :
-		print(f"{6-i} guesses left")
-		ins = autocomplete("What is your guess ", list(languages.keys()))
+	for i in range(10) :
+		ins = autocomplete(f"{10-i} guesses left: ", list(languages.keys()))
 		prop=[
+			"Year     ",
+			"Keywords ",
 			"Compiled ",
 			"Type Safe",
-			"Year     ",
-			"Keywords "
 		]
 		print(ins)
 		i=0
@@ -1431,7 +1376,7 @@ def gameCmd(path: str) :
 		"": "hi"
 	}
 
-	g = autocomplete("What game would you like to play? (blank for random)", list(games.keys()))
+	g = autocomplete("What game would you like to play? (blank for random) ", list(games.keys()))
 
 	if g == "" :
 		games = [languageGame, game2048, memoryGame, masterGame]
